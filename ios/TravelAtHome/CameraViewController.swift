@@ -9,7 +9,7 @@ struct Destination {
 }
 
 final class CameraViewController: UIViewController {
-    private let appVersion = "ios-1"
+    private let appVersion = "ios-2"
     private let destinations = [
         Destination(name: "La Mã", file: "colosseum", lonDeg: 132),
         Destination(name: "Paris", file: "eiffel", lonDeg: -96),
@@ -65,7 +65,7 @@ final class CameraViewController: UIViewController {
         setupControls()
         view.addGestureRecognizer(UIPinchGestureRecognizer(target: self, action: #selector(handlePinch(_:))))
 
-        snap.onSnap = { [weak self] in self?.toggleScene() }
+        snap.onSnap = { [weak self] in self?.snapHeard() }
         capture.onVideo = { [weak self] buffer in self?.handleVideo(buffer) }
         capture.onAudio = { [weak self] buffer in
             self?.snap.process(buffer)
@@ -141,6 +141,7 @@ final class CameraViewController: UIViewController {
         recordButton.layer.borderWidth = 4
         recordButton.layer.borderColor = UIColor.white.cgColor
         recordButton.addTarget(self, action: #selector(tapRecord), for: .touchUpInside)
+        recordButton.addTarget(self, action: #selector(touchedDown), for: .touchDown)
         view.addSubview(recordButton)
     }
 
@@ -153,6 +154,7 @@ final class CameraViewController: UIViewController {
         button.layer.borderWidth = 1
         button.layer.borderColor = UIColor.white.withAlphaComponent(0.35).cgColor
         button.addTarget(self, action: action, for: .touchUpInside)
+        button.addTarget(self, action: #selector(touchedDown), for: .touchDown)
         view.addSubview(button)
     }
 
@@ -165,7 +167,7 @@ final class CameraViewController: UIViewController {
             mv.bounds = CGRect(x: 0, y: 0, width: w, height: h)
             mv.center = CGPoint(x: b.midX, y: b.midY)
         }
-        hud.frame = CGRect(x: 10, y: safe.top + 6, width: min(250, b.width - 150), height: 78)
+        hud.frame = CGRect(x: 10, y: safe.top + 6, width: min(250, b.width - 150), height: 94)
         let rightX = b.width - 138
         var y = safe.top + 6
         for button in [destinationButton, qualityButton, maskButton, flipButton] {
@@ -180,6 +182,21 @@ final class CameraViewController: UIViewController {
     }
 
     @objc private func tapSnap() { toggleScene() }
+
+    // Ngón tay chạm màn hình tạo ra tiếng "tách" ngay sát micro: báo cho bộ nghe để nó bỏ qua.
+    @objc private func touchedDown() { snap.noteTouch() }
+
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        snap.noteTouch()
+        super.touchesBegan(touches, with: event)
+    }
+
+    /// Tiếng búng tay chỉ đưa tới điểm đến. Quay về nhà phải bấm nút "Búng",
+    /// để một tiếng động lạ không kéo cảnh về giữa chừng.
+    private func snapHeard() {
+        guard let r = renderer, r.revealTarget < 0.5 else { return }
+        toggleScene()
+    }
 
     @objc private func tapCenter() { renderer?.centerHeading() }
 
@@ -258,6 +275,7 @@ final class CameraViewController: UIViewController {
         hud.text = " \(appVersion)  \(fps) fps  cam \(Int(size.width))x\(Int(size.height))\n" +
             " tách người: \(segmenter.quality.title) \(String(format: "%.1f", segmentMs)) ms\n" +
             " xoay: \(motion.isAvailable ? "cảm biến" : "không có")  zoom \(String(format: "%.1f", r.zoom))x" +
+            "\n búng: \(snap.fired) (loại \(snap.rejected)\(snap.lastReject.isEmpty ? "" : ": " + snap.lastReject))" +
             (recorder.isRecording ? "\n ● đang quay" : "")
     }
 

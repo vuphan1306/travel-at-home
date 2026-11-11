@@ -8,14 +8,16 @@ const MODELS = {
   fine: `${MP_MODELS}/selfie_multiclass_256x256/float32/latest/selfie_multiclass_256x256.tflite`,  // 6 lớp, lớp 0 là nền
 };
 
-const VERSION = 'v11', ZOOM_MIN = 0.6;
+import { SnapDetector } from './snap.js?v=12';
+
+const VERSION = 'v12', ZOOM_MIN = 0.6;
 const qs = new URLSearchParams(location.search);
 const DEMO = qs.has('demo');          // không dùng camera: nguồn hình và mặt nạ giả lập
 const $ = (id) => document.getElementById(id);
 
 const state = {
   fovV: 70, delayMs: 60, sens: 5, tintAmt: 0.3, zoom: 1,
-  invert: false, listen: true, mirror: true,
+  invert: false, listen: true, mirror: true, snapBack: false, snapCount: 0,
   // Tinh chỉnh mặt nạ: refStep = khoảng cách giữa các điểm lấy mẫu (tính theo điểm của mặt nạ tinh chỉnh),
   // sigmaC = mức khác màu được coi là "cùng một vật", temporal = phần tin vào khung mới ở chỗ đứng yên.
   refine: true, refW: 720, refStep0: 2.2, refStep: 1.0, sigmaC: 0.10, sigmaC2: 0.07, temporal: 0.5,
@@ -587,31 +589,34 @@ const isMatte = () => state.model === 'matte';
 const MODEL_NAMES = { fast: 'nhanh', fine: 'kỹ', matte: 'chuyên dụng' };
 
 // ---------- Bắt tiếng búng tay ----------
-let analyser = null, tdBuf = null, bgLevel = 0.01, cand = null, lastSnap = 0, audioCtx = null;
+let analyser = null, analyserRaw = null, tdBuf = null, rawBuf = null, audioCtx = null;
+const snapDet = new SnapDetector();
 function initAudio() {
   if (!micStream || !micStream.getAudioTracks().length) return;
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   const srcNode = audioCtx.createMediaStreamSource(micStream);
   const hp = audioCtx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 2200;
   analyser = audioCtx.createAnalyser(); analyser.fftSize = 1024; analyser.smoothingTimeConstant = 0;
-  srcNode.connect(hp); hp.connect(analyser);
-  tdBuf = new Float32Array(analyser.fftSize);
+  analyserRaw = audioCtx.createAnalyser(); analyserRaw.fftSize = 1024; analyserRaw.smoothingTimeConstant = 0;
+  srcNode.connect(hp); hp.connect(analyser); srcNode.connect(analyserRaw);
+  tdBuf = new Float32Array(analyser.fftSize); rawBuf = new Float32Array(analyserRaw.fftSize);
   audioCtx.resume();
+  // Ngón tay chạm màn hình tạo ra tiếng "tách" ngay sát micro: bỏ qua âm thanh quanh thời điểm đó.
+  for (const ev of ['pointerdown', 'pointerup', 'touchstart', 'touchend'])
+    document.addEventListener(ev, () => snapDet.noteTouch(performance.now()), { passive: true, capture: true });
 }
+const peakOf = (buf) => { let p = 0; for (let i = 0; i < buf.length; i++) { const v = Math.abs(buf[i]); if (v > p) p = v; } return p; };
 function pollSnap(now) {
   if (!analyser) return;
-  analyser.getFloatTimeDomainData(tdBuf);
-  let peak = 0; for (let i = 0; i < tdBuf.length; i++) { const v = Math.abs(tdBuf[i]); if (v > peak) peak = v; }
-  $('meter').firstElementChild.style.width = Math.min(100, peak * 300) + '%';
-  const thresh = Math.max(0.5 / (state.sens * state.sens), bgLevel * 6);   // sens 5 -> 0.02
-  if (cand) {
-    // Tiếng búng tắt rất nhanh; tiếng nói thì kéo dài. Chờ 90 ms rồi kiểm tra đã lặng lại chưa.
-    if (now - cand.t > 90) {
-      if (peak < cand.peak * 0.35 && state.listen && now - lastSnap > 1200) { lastSnap = now; onSnap(); }
-      cand = null;
-    } else if (peak > cand.peak) cand.peak = peak;
-  } else if (peak > thresh && now - lastSnap > 1200) cand = { t: now, peak };
-  bgLevel = bgLevel * 0.97 + Math.min(peak, 0.2) * 0.03;
+  analyser.getFloatTimeDomainData(tdBuf); analyserRaw.getFloatTimeDomainData(rawBuf);
+  const hp = peakOf(tdBuf), raw = peakOf(rawBuf);
+  $('meter').firstElementChild.style.width = Math.min(100, hp * 300) + '%';
+  snapDet.sens = state.sens;
+  if (snapDet.step(hp, raw, now) && state.listen) {
+    state.snapCount++;
+    // Tiếng búng chỉ đưa tới điểm đến. Quay về nhà phải bấm nút, để một tiếng động lạ không kéo cảnh về giữa chừng.
+    if (state.revealTarget < 0.5 || state.snapBack) onSnap();
+  }
 }
 function onSnap() {
   state.revealTarget = state.revealTarget > 0.5 ? 0 : 1;
@@ -717,7 +722,7 @@ function tick(now) {
     $('hud').textContent =
       `${VERSION}  ${canvas.width}x${canvas.height}  ${state.fps.toFixed(0)} fps  cam ${frameSrc.videoWidth || frameSrc.width}x${frameSrc.videoHeight || frameSrc.height}\n` +
       `tách người: ${MODEL_NAMES[state.model]} ${state.segBackend} ${state.segMs.toFixed(1)} ms  vùng nhỏ: ${state.nRoi}\n` +
-      `xoay: ${state.orient}  zoom ${state.zoom.toFixed(1)}x${state.camInfo ? '\n' + state.camInfo : ''}${recorder ? '\n● đang quay' : ''}`;
+      `xoay: ${state.orient}  zoom ${state.zoom.toFixed(1)}x  búng: ${state.snapCount} (loại ${snapDet.rejected}${snapDet.lastReject ? ': ' + snapDet.lastReject : ''})${state.camInfo ? '\n' + state.camInfo : ''}${recorder ? '\n● đang quay' : ''}`;
   }
 }
 
@@ -758,6 +763,7 @@ function bindUI() {
   $('discard').onclick = () => $('saved').classList.remove('open');
   $('mirror').onclick = (e) => { state.mirror = !state.mirror; canvas.classList.toggle('mirror', state.mirror); e.target.textContent = 'Soi gương: ' + (state.mirror ? 'bật' : 'tắt'); };
   $('invert').onclick = (e) => { state.invert = !state.invert; e.target.textContent = 'Đảo mặt nạ: ' + (state.invert ? 'bật' : 'tắt'); };
+  $('snapBack').onclick = (e) => { state.snapBack = !state.snapBack; e.target.textContent = 'Búng để quay về: ' + (state.snapBack ? 'bật' : 'tắt'); };
   $('listen').onclick = (e) => { state.listen = !state.listen; e.target.textContent = 'Nghe búng tay: ' + (state.listen ? 'bật' : 'tắt'); };
   $('camMode').onclick = nextCamMode;
   bind('erode', 'lo', (v) => v + '%', (v) => { state.lo = 0.2 + v / 100 * 0.5; state.hi = state.lo + 0.3; });
