@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Travel at home - bản thử</title>
+<style>
+  :root { color-scheme: dark; --accent: #ffd166; --rec: #ff4d4d; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; background: #000; color: #fff; overflow: hidden;
+    font: 15px/1.4 -apple-system, system-ui, "Segoe UI", sans-serif; touch-action: manipulation; }
+  #view { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #000; }
+  #view.mirror { transform: scaleX(-1); }
+  .overlay { position: fixed; left: 0; right: 0; padding: 12px 14px; pointer-events: none; }
+  .overlay > * { pointer-events: auto; }
+  #top { top: env(safe-area-inset-top, 0); display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  #hud { font: 11px/1.35 ui-monospace, Menlo, Consolas, monospace; background: rgba(0,0,0,.45);
+    padding: 6px 8px; border-radius: 8px; white-space: pre; }
+  #bottom { bottom: env(safe-area-inset-bottom, 0); display: flex; align-items: center; justify-content: space-around; gap: 10px; padding-bottom: 22px; }
+  button { font: inherit; color: #fff; background: rgba(0,0,0,.5); border: 1px solid rgba(255,255,255,.35);
+    border-radius: 999px; padding: 10px 16px; }
+  button:active { background: rgba(255,255,255,.25); }
+  #rec { width: 72px; height: 72px; padding: 0; border: 4px solid #fff; background: transparent; position: relative; }
+  #rec::after { content: ""; position: absolute; inset: 6px; border-radius: 999px; background: var(--rec); transition: all .15s; }
+  #rec.on::after { inset: 20px; border-radius: 6px; }
+  #panel { position: fixed; left: 10px; right: 10px; bottom: 120px; background: rgba(20,20,20,.92);
+    border-radius: 14px; padding: 14px; display: none; max-height: 60vh; overflow: auto; }
+  #panel.open { display: block; }
+  #panel label { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; margin: 10px 0; }
+  #panel input[type=range] { grid-column: 1 / -1; width: 100%; }
+  #panel .row { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+  #start { position: fixed; inset: 0; background: #0b1020; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center; padding: 28px; gap: 16px; z-index: 5; }
+  #start h1 { margin: 0; font-size: 26px; }
+  #start p { margin: 0; max-width: 34ch; opacity: .8; }
+  #go { background: var(--accent); color: #111; border: 0; font-weight: 700; font-size: 18px; padding: 14px 30px; }
+  #msg { color: #ff9c9c; min-height: 1.4em; white-space: pre-wrap; }
+  #saved { position: fixed; left: 10px; right: 10px; top: 30%; background: rgba(20,20,20,.95); border-radius: 14px;
+    padding: 16px; display: none; text-align: center; z-index: 4; }
+  #saved.open { display: block; }
+  #saved video { width: 50%; border-radius: 10px; margin: 10px 0; }
+  #meter { height: 4px; background: rgba(255,255,255,.2); border-radius: 2px; overflow: hidden; margin-top: 4px; width: 120px; }
+  #meter i { display: block; height: 100%; width: 0; background: var(--accent); }
+</style>
+</head>
+<body>
+<canvas id="view" class="mirror"></canvas>
+<video id="cam" playsinline muted autoplay style="display:none"></video>
+
+<div id="top" class="overlay">
+  <div><div id="hud">đang chờ…</div><div id="meter"><i></i></div></div>
+  <button id="settings">Cài đặt</button>
+</div>
+
+<div id="bottom" class="overlay">
+  <button id="snap">Búng 🫰</button>
+  <button id="rec" aria-label="Quay"></button>
+  <button id="center">Canh giữa</button>
+</div>
+
+<div id="panel">
+  <div class="row">
+    <button id="pickPano">Chọn ảnh 360°</button>
+    <button id="testPano">Dùng ảnh thử</button>
+    <input id="panoFile" type="file" accept="image/*" hidden>
+  </div>
+  <label>Góc nhìn dọc của camera <span id="fovV"></span><input id="fov" type="range" min="45" max="100" step="1" value="70"></label>
+  <label>Độ trễ cảm biến (ms) <span id="delayV"></span><input id="delay" type="range" min="0" max="200" step="5" value="60"></label>
+  <label>Độ nhạy tiếng búng tay <span id="sensV"></span><input id="sens" type="range" min="1" max="10" step="1" value="5"></label>
+  <label>Độ hòa màu với nền <span id="tintV"></span><input id="tint" type="range" min="0" max="100" step="5" value="30"></label>
+  <div class="row">
+    <button id="mirror">Soi gương: bật</button>
+    <button id="invert">Đảo mặt nạ: tắt</button>
+    <button id="listen">Nghe búng tay: bật</button>
+  </div>
+  <div class="row"><button id="closePanel">Đóng</button></div>
+</div>
+
+<div id="saved">
+  <div id="savedInfo"></div>
+  <video id="savedVideo" playsinline controls></video>
+  <div class="row" style="display:flex;gap:8px;justify-content:center">
+    <button id="share">Lưu / chia sẻ</button>
+    <button id="discard">Bỏ</button>
+  </div>
+</div>
+
+<div id="start">
+  <h1>Travel at home</h1>
+  <p>Bản thử: tách người khỏi nền, thay bằng ảnh 360° xoay theo điện thoại. Búng tay để chuyển cảnh.</p>
+  <button id="go">Bắt đầu</button>
+  <div id="msg"></div>
+</div>
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>
