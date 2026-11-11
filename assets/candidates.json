@@ -1,0 +1,802 @@
+[
+ {
+  "code": "hn-ho-guom",
+  "name": "Hồ Gươm, Hà Nội",
+  "candidates": [],
+  "total": 0,
+  "seen": 0
+ },
+ {
+  "code": "hn-van-mieu",
+  "name": "Văn Miếu, Hà Nội",
+  "candidates": [],
+  "total": 0,
+  "seen": 0
+ },
+ {
+  "code": "hn-pho-co",
+  "name": "Phố cổ / trung tâm Hà Nội",
+  "candidates": [
+   {
+    "title": "File:Mapillary (814708993777549, Yh9tzqFokRmQsaAUdPGJT0) (bemaps hn kien) 2023-09-19 11H03M22S864.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mapillary_(814708993777549,_Yh9tzqFokRmQsaAUdPGJT0)_(bemaps_hn_kien)_2023-09-19_11H03M22S864.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/64/Mapillary_%28814708993777549%2C_Yh9tzqFokRmQsaAUdPGJT0%29_%28bemaps_hn_kien%29_2023-09-19_11H03M22S864.jpg/960px-Mapillary_%28814708993777549%2C_Yh9tzqFokRmQsaAUdPGJT0%29_%28bemaps_hn_kien%29_2023-09-19_11H03M22S864.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/6/64/Mapillary_%28814708993777549%2C_Yh9tzqFokRmQsaAUdPGJT0%29_%28bemaps_hn_kien%29_2023-09-19_11H03M22S864.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 4096,
+    "h": 2048,
+    "license": "CC BY-SA 4.0",
+    "author": "bemaps_hn_kien",
+    "attribution_required": true,
+    "desc": "Photo from Mapillary"
+   },
+   {
+    "title": "File:Mapillary (1029974011619703, Yh9tzqFokRmQsaAUdPGJT0) (bemaps hn kien) 2023-09-19 11H03M24S699.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mapillary_(1029974011619703,_Yh9tzqFokRmQsaAUdPGJT0)_(bemaps_hn_kien)_2023-09-19_11H03M24S699.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/31/Mapillary_%281029974011619703%2C_Yh9tzqFokRmQsaAUdPGJT0%29_%28bemaps_hn_kien%29_2023-09-19_11H03M24S699.jpg/960px-Mapillary_%281029974011619703%2C_Yh9tzqFokRmQsaAUdPGJT0%29_%28bemaps_hn_kien%29_2023-09-19_11H03M24S699.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/3/31/Mapillary_%281029974011619703%2C_Yh9tzqFokRmQsaAUdPGJT0%29_%28bemaps_hn_kien%29_2023-09-19_11H03M24S699.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 4096,
+    "h": 2048,
+    "license": "CC BY-SA 4.0",
+    "author": "bemaps_hn_kien",
+    "attribution_required": true,
+    "desc": "Photo from Mapillary"
+   },
+   {
+    "title": "File:Mapillary (6615565698552283, Yh9tzqFokRmQsaAUdPGJT0) (bemaps hn kien) 2023-09-19 11H03M30S121.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mapillary_(6615565698552283,_Yh9tzqFokRmQsaAUdPGJT0)_(bemaps_hn_kien)_2023-09-19_11H03M30S121.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e4/Mapillary_%286615565698552283%2C_Yh9tzqFokRmQsaAUdPGJT0%29_%28bemaps_hn_kien%29_2023-09-19_11H03M30S121.jpg/960px-Mapillary_%286615565698552283%2C_Yh9tzqFokRmQsaAUdPGJT0%29_%28bemaps_hn_kien%29_2023-09-19_11H03M30S121.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/e/e4/Mapillary_%286615565698552283%2C_Yh9tzqFokRmQsaAUdPGJT0%29_%28bemaps_hn_kien%29_2023-09-19_11H03M30S121.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 4096,
+    "h": 2048,
+    "license": "CC BY-SA 4.0",
+    "author": "bemaps_hn_kien",
+    "attribution_required": true,
+    "desc": "Photo from Mapillary"
+   },
+   {
+    "title": "File:Mapillary (838957474433876, Yh9tzqFokRmQsaAUdPGJT0) (bemaps hn kien) 2023-09-19 11H03M30S830.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mapillary_(838957474433876,_Yh9tzqFokRmQsaAUdPGJT0)_(bemaps_hn_kien)_2023-09-19_11H03M30S830.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c0/Mapillary_%28838957474433876%2C_Yh9tzqFokRmQsaAUdPGJT0%29_%28bemaps_hn_kien%29_2023-09-19_11H03M30S830.jpg/960px-Mapillary_%28838957474433876%2C_Yh9tzqFokRmQsaAUdPGJT0%29_%28bemaps_hn_kien%29_2023-09-19_11H03M30S830.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/c/c0/Mapillary_%28838957474433876%2C_Yh9tzqFokRmQsaAUdPGJT0%29_%28bemaps_hn_kien%29_2023-09-19_11H03M30S830.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 4096,
+    "h": 2048,
+    "license": "CC BY-SA 4.0",
+    "author": "bemaps_hn_kien",
+    "attribution_required": true,
+    "desc": "Photo from Mapillary"
+   },
+   {
+    "title": "File:Mapillary (993947321724299, Yh9tzqFokRmQsaAUdPGJT0) (bemaps hn kien) 2023-09-19 11H03M31S414.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mapillary_(993947321724299,_Yh9tzqFokRmQsaAUdPGJT0)_(bemaps_hn_kien)_2023-09-19_11H03M31S414.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/05/Mapillary_%28993947321724299%2C_Yh9tzqFokRmQsaAUdPGJT0%29_%28bemaps_hn_kien%29_2023-09-19_11H03M31S414.jpg/960px-Mapillary_%28993947321724299%2C_Yh9tzqFokRmQsaAUdPGJT0%29_%28bemaps_hn_kien%29_2023-09-19_11H03M31S414.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/0/05/Mapillary_%28993947321724299%2C_Yh9tzqFokRmQsaAUdPGJT0%29_%28bemaps_hn_kien%29_2023-09-19_11H03M31S414.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 4096,
+    "h": 2048,
+    "license": "CC BY-SA 4.0",
+    "author": "bemaps_hn_kien",
+    "attribution_required": true,
+    "desc": "Photo from Mapillary"
+   },
+   {
+    "title": "File:Mapillary (829878938587162, Yh9tzqFokRmQsaAUdPGJT0) (bemaps hn kien) 2023-09-19 11H03M38S838.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mapillary_(829878938587162,_Yh9tzqFokRmQsaAUdPGJT0)_(bemaps_hn_kien)_2023-09-19_11H03M38S838.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d9/Mapillary_%28829878938587162%2C_Yh9tzqFokRmQsaAUdPGJT0%29_%28bemaps_hn_kien%29_2023-09-19_11H03M38S838.jpg/960px-Mapillary_%28829878938587162%2C_Yh9tzqFokRmQsaAUdPGJT0%29_%28bemaps_hn_kien%29_2023-09-19_11H03M38S838.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/d/d9/Mapillary_%28829878938587162%2C_Yh9tzqFokRmQsaAUdPGJT0%29_%28bemaps_hn_kien%29_2023-09-19_11H03M38S838.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 4096,
+    "h": 2048,
+    "license": "CC BY-SA 4.0",
+    "author": "bemaps_hn_kien",
+    "attribution_required": true,
+    "desc": "Photo from Mapillary"
+   },
+   {
+    "title": "File:Mapillary (239986295726830, Yh9tzqFokRmQsaAUdPGJT0) (bemaps hn kien) 2023-09-19 11H03M51S851.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mapillary_(239986295726830,_Yh9tzqFokRmQsaAUdPGJT0)_(bemaps_hn_kien)_2023-09-19_11H03M51S851.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/72/Mapillary_%28239986295726830%2C_Yh9tzqFokRmQsaAUdPGJT0%29_%28bemaps_hn_kien%29_2023-09-19_11H03M51S851.jpg/960px-Mapillary_%28239986295726830%2C_Yh9tzqFokRmQsaAUdPGJT0%29_%28bemaps_hn_kien%29_2023-09-19_11H03M51S851.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/7/72/Mapillary_%28239986295726830%2C_Yh9tzqFokRmQsaAUdPGJT0%29_%28bemaps_hn_kien%29_2023-09-19_11H03M51S851.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 4096,
+    "h": 2048,
+    "license": "CC BY-SA 4.0",
+    "author": "bemaps_hn_kien",
+    "attribution_required": true,
+    "desc": "Photo from Mapillary"
+   },
+   {
+    "title": "File:Mapillary (1639337929809532, Yh9tzqFokRmQsaAUdPGJT0) (bemaps hn kien) 2023-09-19 11H03M56S356.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mapillary_(1639337929809532,_Yh9tzqFokRmQsaAUdPGJT0)_(bemaps_hn_kien)_2023-09-19_11H03M56S356.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b3/Mapillary_%281639337929809532%2C_Yh9tzqFokRmQsaAUdPGJT0%29_%28bemaps_hn_kien%29_2023-09-19_11H03M56S356.jpg/960px-Mapillary_%281639337929809532%2C_Yh9tzqFokRmQsaAUdPGJT0%29_%28bemaps_hn_kien%29_2023-09-19_11H03M56S356.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/b/b3/Mapillary_%281639337929809532%2C_Yh9tzqFokRmQsaAUdPGJT0%29_%28bemaps_hn_kien%29_2023-09-19_11H03M56S356.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 4096,
+    "h": 2048,
+    "license": "CC BY-SA 4.0",
+    "author": "bemaps_hn_kien",
+    "attribution_required": true,
+    "desc": "Photo from Mapillary"
+   }
+  ],
+  "total": 64,
+  "seen": 115
+ },
+ {
+  "code": "ha-long",
+  "name": "Vịnh Hạ Long",
+  "candidates": [
+   {
+    "title": "File:Eesti Üliõpilaste Seltsi maja, raamatukogu.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Eesti_%C3%9Cli%C3%B5pilaste_Seltsi_maja,_raamatukogu.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/12/Eesti_%C3%9Cli%C3%B5pilaste_Seltsi_maja%2C_raamatukogu.jpg/960px-Eesti_%C3%9Cli%C3%B5pilaste_Seltsi_maja%2C_raamatukogu.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/1/12/Eesti_%C3%9Cli%C3%B5pilaste_Seltsi_maja%2C_raamatukogu.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 14000,
+    "h": 7000,
+    "license": "CC BY-SA 4.0",
+    "author": "Lauri Veerde",
+    "attribution_required": true,
+    "desc": "360° view on the library of the Estonian Students' Society."
+   }
+  ],
+  "total": 1,
+  "seen": 87
+ },
+ {
+  "code": "hoi-an",
+  "name": "Hội An",
+  "candidates": [],
+  "total": 0,
+  "seen": 30
+ },
+ {
+  "code": "hue",
+  "name": "Đại Nội Huế",
+  "candidates": [
+   {
+    "title": "File:View above the Danish 1 54-metre telescope (150120dansky-eq-extended).tiff",
+    "page": "https://commons.wikimedia.org/wiki/File:View_above_the_Danish_1_54-metre_telescope_(150120dansky-eq-extended).tiff",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fb/View_above_the_Danish_1_54-metre_telescope_%28150120dansky-eq-extended%29.tiff/lossy-page1-960px-View_above_the_Danish_1_54-metre_telescope_%28150120dansky-eq-extended%29.tiff.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/f/fb/View_above_the_Danish_1_54-metre_telescope_%28150120dansky-eq-extended%29.tiff?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 27356,
+    "h": 13678,
+    "license": "CC BY 4.0",
+    "author": "P. Horálek/ESO",
+    "attribution_required": true,
+    "desc": "An extended to 360 x 180 degrees (with black) panoramic view above the Danish 1.54-metre telescope, located at ESO's La Silla Observatory in northern Chile, rev"
+   },
+   {
+    "title": "File:View above the Danish 1 54-metre telescope (150120dansky-eq-extended).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:View_above_the_Danish_1_54-metre_telescope_(150120dansky-eq-extended).jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/32/View_above_the_Danish_1_54-metre_telescope_%28150120dansky-eq-extended%29.jpg/960px-View_above_the_Danish_1_54-metre_telescope_%28150120dansky-eq-extended%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/3/32/View_above_the_Danish_1_54-metre_telescope_%28150120dansky-eq-extended%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 27356,
+    "h": 13678,
+    "license": "CC BY 4.0",
+    "author": "P. Horálek/ESO",
+    "attribution_required": true,
+    "desc": "An extended to 360 x 180 degrees (with black) panoramic view above the Danish 1.54-metre telescope, located at ESO's La Silla Observatory in northern Chile, rev"
+   },
+   {
+    "title": "File:View above La Silla (150119cesta-airglow-eq-extended).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:View_above_La_Silla_(150119cesta-airglow-eq-extended).jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/90/View_above_La_Silla_%28150119cesta-airglow-eq-extended%29.jpg/960px-View_above_La_Silla_%28150119cesta-airglow-eq-extended%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/9/90/View_above_La_Silla_%28150119cesta-airglow-eq-extended%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 26692,
+    "h": 13346,
+    "license": "CC BY 4.0",
+    "author": "P. Horálek/ESO",
+    "attribution_required": true,
+    "desc": "An extended to 360 x 180 degrees (with black) panorama taken during the [/public/outreach/ultra-high-definition/ ESO Ultra HD Expedition]. The view of ESO's La "
+   },
+   {
+    "title": "File:View above La Silla (150119cesta-airglow-eq-extended).tiff",
+    "page": "https://commons.wikimedia.org/wiki/File:View_above_La_Silla_(150119cesta-airglow-eq-extended).tiff",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ea/View_above_La_Silla_%28150119cesta-airglow-eq-extended%29.tiff/lossy-page1-960px-View_above_La_Silla_%28150119cesta-airglow-eq-extended%29.tiff.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/e/ea/View_above_La_Silla_%28150119cesta-airglow-eq-extended%29.tiff?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 26692,
+    "h": 13346,
+    "license": "CC BY 4.0",
+    "author": "P. Horálek/ESO",
+    "attribution_required": true,
+    "desc": "An extended to 360 x 180 degrees (with black) panorama taken during the [/public/outreach/ultra-high-definition/ ESO Ultra HD Expedition]. The view of ESO's La "
+   }
+  ],
+  "total": 4,
+  "seen": 91
+ },
+ {
+  "code": "da-nang",
+  "name": "Đà Nẵng / Bà Nà",
+  "candidates": [],
+  "total": 0,
+  "seen": 48
+ },
+ {
+  "code": "sai-gon",
+  "name": "TP. Hồ Chí Minh",
+  "candidates": [
+   {
+    "title": "File:Mapillary (212172801684825, o8RhGkIP3LW9aMqBTYdnV0) (bemaps 1pd) 2023-06-01 08H08M16S367.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mapillary_(212172801684825,_o8RhGkIP3LW9aMqBTYdnV0)_(bemaps_1pd)_2023-06-01_08H08M16S367.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d8/Mapillary_%28212172801684825%2C_o8RhGkIP3LW9aMqBTYdnV0%29_%28bemaps_1pd%29_2023-06-01_08H08M16S367.jpg/960px-Mapillary_%28212172801684825%2C_o8RhGkIP3LW9aMqBTYdnV0%29_%28bemaps_1pd%29_2023-06-01_08H08M16S367.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/d/d8/Mapillary_%28212172801684825%2C_o8RhGkIP3LW9aMqBTYdnV0%29_%28bemaps_1pd%29_2023-06-01_08H08M16S367.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 4096,
+    "h": 2048,
+    "license": "CC BY-SA 4.0",
+    "author": "bemaps_1pd",
+    "attribution_required": true,
+    "desc": "Photo from Mapillary"
+   },
+   {
+    "title": "File:Mapillary (6137618936356234, o8RhGkIP3LW9aMqBTYdnV0) (bemaps 1pd) 2023-06-01 08H08M23S208.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mapillary_(6137618936356234,_o8RhGkIP3LW9aMqBTYdnV0)_(bemaps_1pd)_2023-06-01_08H08M23S208.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/37/Mapillary_%286137618936356234%2C_o8RhGkIP3LW9aMqBTYdnV0%29_%28bemaps_1pd%29_2023-06-01_08H08M23S208.jpg/960px-Mapillary_%286137618936356234%2C_o8RhGkIP3LW9aMqBTYdnV0%29_%28bemaps_1pd%29_2023-06-01_08H08M23S208.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/3/37/Mapillary_%286137618936356234%2C_o8RhGkIP3LW9aMqBTYdnV0%29_%28bemaps_1pd%29_2023-06-01_08H08M23S208.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 4096,
+    "h": 2048,
+    "license": "CC BY-SA 4.0",
+    "author": "bemaps_1pd",
+    "attribution_required": true,
+    "desc": "Photo from Mapillary"
+   },
+   {
+    "title": "File:Mapillary (567833395435575, o8RhGkIP3LW9aMqBTYdnV0) (bemaps 1pd) 2023-06-01 08H08M28S421.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mapillary_(567833395435575,_o8RhGkIP3LW9aMqBTYdnV0)_(bemaps_1pd)_2023-06-01_08H08M28S421.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/53/Mapillary_%28567833395435575%2C_o8RhGkIP3LW9aMqBTYdnV0%29_%28bemaps_1pd%29_2023-06-01_08H08M28S421.jpg/960px-Mapillary_%28567833395435575%2C_o8RhGkIP3LW9aMqBTYdnV0%29_%28bemaps_1pd%29_2023-06-01_08H08M28S421.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/5/53/Mapillary_%28567833395435575%2C_o8RhGkIP3LW9aMqBTYdnV0%29_%28bemaps_1pd%29_2023-06-01_08H08M28S421.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 4096,
+    "h": 2048,
+    "license": "CC BY-SA 4.0",
+    "author": "bemaps_1pd",
+    "attribution_required": true,
+    "desc": "Photo from Mapillary"
+   },
+   {
+    "title": "File:Mapillary (1989120677924960, o8RhGkIP3LW9aMqBTYdnV0) (bemaps 1pd) 2023-06-01 08H08M30S131.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mapillary_(1989120677924960,_o8RhGkIP3LW9aMqBTYdnV0)_(bemaps_1pd)_2023-06-01_08H08M30S131.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5f/Mapillary_%281989120677924960%2C_o8RhGkIP3LW9aMqBTYdnV0%29_%28bemaps_1pd%29_2023-06-01_08H08M30S131.jpg/960px-Mapillary_%281989120677924960%2C_o8RhGkIP3LW9aMqBTYdnV0%29_%28bemaps_1pd%29_2023-06-01_08H08M30S131.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/5/5f/Mapillary_%281989120677924960%2C_o8RhGkIP3LW9aMqBTYdnV0%29_%28bemaps_1pd%29_2023-06-01_08H08M30S131.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 4096,
+    "h": 2048,
+    "license": "CC BY-SA 4.0",
+    "author": "bemaps_1pd",
+    "attribution_required": true,
+    "desc": "Photo from Mapillary"
+   },
+   {
+    "title": "File:Mapillary (1241197700101129, o8RhGkIP3LW9aMqBTYdnV0) (bemaps 1pd) 2023-06-01 08H08M32S050.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mapillary_(1241197700101129,_o8RhGkIP3LW9aMqBTYdnV0)_(bemaps_1pd)_2023-06-01_08H08M32S050.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e3/Mapillary_%281241197700101129%2C_o8RhGkIP3LW9aMqBTYdnV0%29_%28bemaps_1pd%29_2023-06-01_08H08M32S050.jpg/960px-Mapillary_%281241197700101129%2C_o8RhGkIP3LW9aMqBTYdnV0%29_%28bemaps_1pd%29_2023-06-01_08H08M32S050.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/e/e3/Mapillary_%281241197700101129%2C_o8RhGkIP3LW9aMqBTYdnV0%29_%28bemaps_1pd%29_2023-06-01_08H08M32S050.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 4096,
+    "h": 2048,
+    "license": "CC BY-SA 4.0",
+    "author": "bemaps_1pd",
+    "attribution_required": true,
+    "desc": "Photo from Mapillary"
+   },
+   {
+    "title": "File:Mapillary (553748440168975, o8RhGkIP3LW9aMqBTYdnV0) (bemaps 1pd) 2023-06-01 08H08M52S278.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mapillary_(553748440168975,_o8RhGkIP3LW9aMqBTYdnV0)_(bemaps_1pd)_2023-06-01_08H08M52S278.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1c/Mapillary_%28553748440168975%2C_o8RhGkIP3LW9aMqBTYdnV0%29_%28bemaps_1pd%29_2023-06-01_08H08M52S278.jpg/960px-Mapillary_%28553748440168975%2C_o8RhGkIP3LW9aMqBTYdnV0%29_%28bemaps_1pd%29_2023-06-01_08H08M52S278.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/1/1c/Mapillary_%28553748440168975%2C_o8RhGkIP3LW9aMqBTYdnV0%29_%28bemaps_1pd%29_2023-06-01_08H08M52S278.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 4096,
+    "h": 2048,
+    "license": "CC BY-SA 4.0",
+    "author": "bemaps_1pd",
+    "attribution_required": true,
+    "desc": "Photo from Mapillary"
+   },
+   {
+    "title": "File:Mapillary (2279349542254114, o8RhGkIP3LW9aMqBTYdnV0) (bemaps 1pd) 2023-06-01 08H08M59S786.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mapillary_(2279349542254114,_o8RhGkIP3LW9aMqBTYdnV0)_(bemaps_1pd)_2023-06-01_08H08M59S786.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d8/Mapillary_%282279349542254114%2C_o8RhGkIP3LW9aMqBTYdnV0%29_%28bemaps_1pd%29_2023-06-01_08H08M59S786.jpg/960px-Mapillary_%282279349542254114%2C_o8RhGkIP3LW9aMqBTYdnV0%29_%28bemaps_1pd%29_2023-06-01_08H08M59S786.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/d/d8/Mapillary_%282279349542254114%2C_o8RhGkIP3LW9aMqBTYdnV0%29_%28bemaps_1pd%29_2023-06-01_08H08M59S786.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 4096,
+    "h": 2048,
+    "license": "CC BY-SA 4.0",
+    "author": "bemaps_1pd",
+    "attribution_required": true,
+    "desc": "Photo from Mapillary"
+   },
+   {
+    "title": "File:Mapillary (1277982196137188, o8RhGkIP3LW9aMqBTYdnV0) (bemaps 1pd) 2023-06-01 08H09M09S837.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mapillary_(1277982196137188,_o8RhGkIP3LW9aMqBTYdnV0)_(bemaps_1pd)_2023-06-01_08H09M09S837.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4f/Mapillary_%281277982196137188%2C_o8RhGkIP3LW9aMqBTYdnV0%29_%28bemaps_1pd%29_2023-06-01_08H09M09S837.jpg/960px-Mapillary_%281277982196137188%2C_o8RhGkIP3LW9aMqBTYdnV0%29_%28bemaps_1pd%29_2023-06-01_08H09M09S837.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Mapillary_%281277982196137188%2C_o8RhGkIP3LW9aMqBTYdnV0%29_%28bemaps_1pd%29_2023-06-01_08H09M09S837.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 4096,
+    "h": 2048,
+    "license": "CC BY-SA 4.0",
+    "author": "bemaps_1pd",
+    "attribution_required": true,
+    "desc": "Photo from Mapillary"
+   }
+  ],
+  "total": 80,
+  "seen": 92
+ },
+ {
+  "code": "ninh-binh",
+  "name": "Ninh Bình / Tràng An",
+  "candidates": [
+   {
+    "title": "File:Approaching storm – Panorama (Greg Zaal via Poly Haven).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Approaching_storm_%E2%80%93_Panorama_(Greg_Zaal_via_Poly_Haven).jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/12/Approaching_storm_%E2%80%93_Panorama_%28Greg_Zaal_via_Poly_Haven%29.jpg/960px-Approaching_storm_%E2%80%93_Panorama_%28Greg_Zaal_via_Poly_Haven%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/1/12/Approaching_storm_%E2%80%93_Panorama_%28Greg_Zaal_via_Poly_Haven%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 8192,
+    "h": 4096,
+    "license": "CC0",
+    "author": "Greg Zaal",
+    "attribution_required": false,
+    "desc": "Panorama of a field with approaching storm. EVs: 13, WB: 5400K."
+   }
+  ],
+  "total": 1,
+  "seen": 5
+ },
+ {
+  "code": "sa-pa",
+  "name": "Sa Pa / Fansipan",
+  "candidates": [
+   {
+    "title": "File:Église de Noyal-sur-Vilaine.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%C3%89glise_de_Noyal-sur-Vilaine.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6b/%C3%89glise_de_Noyal-sur-Vilaine.jpg/960px-%C3%89glise_de_Noyal-sur-Vilaine.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/6/6b/%C3%89glise_de_Noyal-sur-Vilaine.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 10366,
+    "h": 5183,
+    "license": "CC BY-SA 4.0",
+    "author": "Bernard Marti",
+    "attribution_required": true,
+    "desc": "L’église Saint-Pierre de Noyal sur Vilaine , bénie en 1894, est l’œuvre d’Arthur Régnault, architecte diocésain auquel on doit un grand nombre d’églises remarqu"
+   },
+   {
+    "title": "File:Wikimedia Sverige Kontor 3.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Wikimedia_Sverige_Kontor_3.JPG",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/76/Wikimedia_Sverige_Kontor_3.JPG/960px-Wikimedia_Sverige_Kontor_3.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/7/76/Wikimedia_Sverige_Kontor_3.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 5376,
+    "h": 2688,
+    "license": "CC BY-SA 4.0",
+    "author": "Jan Ainali",
+    "attribution_required": true,
+    "desc": "Köket på Wikimedia Sverige."
+   },
+   {
+    "title": "File:Wikimedia Sverige Kontor 1.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Wikimedia_Sverige_Kontor_1.JPG",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a8/Wikimedia_Sverige_Kontor_1.JPG/960px-Wikimedia_Sverige_Kontor_1.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/a/a8/Wikimedia_Sverige_Kontor_1.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 5376,
+    "h": 2688,
+    "license": "CC BY-SA 4.0",
+    "author": "Jan Ainali",
+    "attribution_required": true,
+    "desc": "Kontoret på Wikimedia Sverige."
+   },
+   {
+    "title": "File:Wikimedia Sverige Kontor 2.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Wikimedia_Sverige_Kontor_2.JPG",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b8/Wikimedia_Sverige_Kontor_2.JPG/960px-Wikimedia_Sverige_Kontor_2.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/b/b8/Wikimedia_Sverige_Kontor_2.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 5376,
+    "h": 2688,
+    "license": "CC BY-SA 4.0",
+    "author": "Jan Ainali",
+    "attribution_required": true,
+    "desc": "Kontoret på Wikimedia Sverige."
+   },
+   {
+    "title": "File:Nederlulea church interior 360 panorama 2017-06-06.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Nederlulea_church_interior_360_panorama_2017-06-06.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cd/Nederlulea_church_interior_360_panorama_2017-06-06.jpg/960px-Nederlulea_church_interior_360_panorama_2017-06-06.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/c/cd/Nederlulea_church_interior_360_panorama_2017-06-06.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 5376,
+    "h": 2688,
+    "license": "CC BY-SA 4.0",
+    "author": "Andreas Lakso",
+    "attribution_required": true,
+    "desc": "360 graders panorama av Nederluleå kyrka. En kyrkobyggnad i Gammelstads kyrkstad i Gammelstad, 10 kilometer nordväst om Luleå. Kyrkan är församlingskyrka i Nede"
+   },
+   {
+    "title": "File:Ånglok SJ littera Ma nr 779 - 360 panorama 2017.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%C3%85nglok_SJ_littera_Ma_nr_779_-_360_panorama_2017.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d0/%C3%85nglok_SJ_littera_Ma_nr_779_-_360_panorama_2017.jpg/960px-%C3%85nglok_SJ_littera_Ma_nr_779_-_360_panorama_2017.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/d/d0/%C3%85nglok_SJ_littera_Ma_nr_779_-_360_panorama_2017.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 5376,
+    "h": 2688,
+    "license": "CC BY-SA 4.0",
+    "author": "Andreas",
+    "attribution_required": true,
+    "desc": "Ånglok SJ littera Ma nr 779. 360 graders panorama av hytt. Ett tvåcylindrigt kompoundlok med 16 tons axeltryck och som tillverkades i 20 exemplar mellan 1902 oc"
+   },
+   {
+    "title": "File:Ånglok SJ littera E2 - 360 panorama 2017.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%C3%85nglok_SJ_littera_E2_-_360_panorama_2017.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f1/%C3%85nglok_SJ_littera_E2_-_360_panorama_2017.jpg/960px-%C3%85nglok_SJ_littera_E2_-_360_panorama_2017.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/f/f1/%C3%85nglok_SJ_littera_E2_-_360_panorama_2017.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 5376,
+    "h": 2688,
+    "license": "CC BY-SA 4.0",
+    "author": "Andreas Lakso",
+    "attribution_required": true,
+    "desc": "Ånglok SJ littera E2. 360 graders panorama av hytt. E-loket byggdes för Norrlandstrafiken, ett lätt lok med lågt axeltryck som skulle fara varsamt fram med det "
+   },
+   {
+    "title": "File:Friluftsmuseet hägnan luleå stall 360 panorama 2017-07.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Friluftsmuseet_h%C3%A4gnan_lule%C3%A5_stall_360_panorama_2017-07.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3a/Friluftsmuseet_h%C3%A4gnan_lule%C3%A5_stall_360_panorama_2017-07.jpg/960px-Friluftsmuseet_h%C3%A4gnan_lule%C3%A5_stall_360_panorama_2017-07.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/3/3a/Friluftsmuseet_h%C3%A4gnan_lule%C3%A5_stall_360_panorama_2017-07.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 5376,
+    "h": 2688,
+    "license": "CC BY-SA 4.0",
+    "author": "Andreas Lakso",
+    "attribution_required": true,
+    "desc": "Stallbyggnad på friluftsmuseet Hägnan i Gammelstad, Luleå"
+   }
+  ],
+  "total": 100,
+  "seen": 112
+ },
+ {
+  "code": "eiffel",
+  "name": "Tháp Eiffel, Paris",
+  "candidates": [
+   {
+    "title": "File:Louvre panosphere 20200303.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Louvre_panosphere_20200303.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d6/Louvre_panosphere_20200303.jpg/960px-Louvre_panosphere_20200303.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/d/d6/Louvre_panosphere_20200303.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 12864,
+    "h": 6432,
+    "license": "CC BY-SA 3.0",
+    "author": "Daniel Kraft",
+    "attribution_required": true,
+    "desc": "Spherical panorama in equirectangular projection of the Louvre's Cour Napoléon (with the pyramid) and the small triumphal arc leading to Tuileries gardens on th"
+   },
+   {
+    "title": "File:Pont de Bir-Hakeim and the Eiffel Tower, April 2007.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pont_de_Bir-Hakeim_and_the_Eiffel_Tower,_April_2007.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d1/Pont_de_Bir-Hakeim_and_the_Eiffel_Tower%2C_April_2007.jpg/960px-Pont_de_Bir-Hakeim_and_the_Eiffel_Tower%2C_April_2007.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/d/d1/Pont_de_Bir-Hakeim_and_the_Eiffel_Tower%2C_April_2007.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 10000,
+    "h": 5000,
+    "license": "CC BY-SA 2.0",
+    "author": "Alexandre Duret-Lutz",
+    "attribution_required": true,
+    "desc": "Pont de Bir-Hakeim and the Eiffel Tower, Paris."
+   },
+   {
+    "title": "File:Pont de Bir-Hakeim December 2006.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pont_de_Bir-Hakeim_December_2006.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c9/Pont_de_Bir-Hakeim_December_2006.jpg/960px-Pont_de_Bir-Hakeim_December_2006.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/c/c9/Pont_de_Bir-Hakeim_December_2006.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 7500,
+    "h": 3750,
+    "license": "CC BY-SA 2.0",
+    "author": "Alexandre Duret-Lutz",
+    "attribution_required": true,
+    "desc": "A 360 degree view of the Pont de Bir-Hakeim, Paris, France."
+   },
+   {
+    "title": "File:Pont de Bir-Hakeim, Paris 25 March 2007.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pont_de_Bir-Hakeim,_Paris_25_March_2007.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9c/Pont_de_Bir-Hakeim%2C_Paris_25_March_2007.jpg/960px-Pont_de_Bir-Hakeim%2C_Paris_25_March_2007.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/9/9c/Pont_de_Bir-Hakeim%2C_Paris_25_March_2007.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 7500,
+    "h": 3750,
+    "license": "CC BY-SA 2.0",
+    "author": "Alexandre Duret-Lutz from Paris, France",
+    "attribution_required": true,
+    "desc": "Pont de Bir-Hakeim and the Eiffel Tower, Paris."
+   }
+  ],
+  "total": 4,
+  "seen": 64
+ },
+ {
+  "code": "great-wall",
+  "name": "Vạn Lý Trường Thành",
+  "candidates": [
+   {
+    "title": "File:Mutianyu – Panorama (Greg Zaal via Poly Haven).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mutianyu_%E2%80%93_Panorama_(Greg_Zaal_via_Poly_Haven).jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b7/Mutianyu_%E2%80%93_Panorama_%28Greg_Zaal_via_Poly_Haven%29.jpg/960px-Mutianyu_%E2%80%93_Panorama_%28Greg_Zaal_via_Poly_Haven%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/b/b7/Mutianyu_%E2%80%93_Panorama_%28Greg_Zaal_via_Poly_Haven%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 8192,
+    "h": 4096,
+    "license": "CC0",
+    "author": "Greg Zaal",
+    "attribution_required": false,
+    "desc": "Panorama of the Great Wall of China. EVs: 8. WB: 5400K."
+   },
+   {
+    "title": "File:Mapillary (wsp us) 2017-05-20 23H40M01S000 (979695472805059 at wP9xKvtP2DVZkkqQUA9m4w with LGE LG-R105).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mapillary_(wsp_us)_2017-05-20_23H40M01S000_(979695472805059_at_wP9xKvtP2DVZkkqQUA9m4w_with_LGE_LG-R105).jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/27/Mapillary_%28wsp_us%29_2017-05-20_23H40M01S000_%28979695472805059_at_wP9xKvtP2DVZkkqQUA9m4w_with_LGE_LG-R105%29.jpg/960px-Mapillary_%28wsp_us%29_2017-05-20_23H40M01S000_%28979695472805059_at_wP9xKvtP2DVZkkqQUA9m4w_with_LGE_LG-R105%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/2/27/Mapillary_%28wsp_us%29_2017-05-20_23H40M01S000_%28979695472805059_at_wP9xKvtP2DVZkkqQUA9m4w_with_LGE_LG-R105%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 5660,
+    "h": 2830,
+    "license": "CC BY-SA 4.0",
+    "author": "wsp_us",
+    "attribution_required": true,
+    "desc": "Photo from Mapillary"
+   },
+   {
+    "title": "File:Mapillary (wsp us) 2017-05-20 23H40M05S000 (803083280337015 at wP9xKvtP2DVZkkqQUA9m4w with LGE LG-R105).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mapillary_(wsp_us)_2017-05-20_23H40M05S000_(803083280337015_at_wP9xKvtP2DVZkkqQUA9m4w_with_LGE_LG-R105).jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/20/Mapillary_%28wsp_us%29_2017-05-20_23H40M05S000_%28803083280337015_at_wP9xKvtP2DVZkkqQUA9m4w_with_LGE_LG-R105%29.jpg/960px-Mapillary_%28wsp_us%29_2017-05-20_23H40M05S000_%28803083280337015_at_wP9xKvtP2DVZkkqQUA9m4w_with_LGE_LG-R105%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/2/20/Mapillary_%28wsp_us%29_2017-05-20_23H40M05S000_%28803083280337015_at_wP9xKvtP2DVZkkqQUA9m4w_with_LGE_LG-R105%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 5660,
+    "h": 2830,
+    "license": "CC BY-SA 4.0",
+    "author": "wsp_us",
+    "attribution_required": true,
+    "desc": "Photo from Mapillary"
+   },
+   {
+    "title": "File:Mapillary (wsp us) 2017-05-20 23H40M03S000 (369921910999625 at wP9xKvtP2DVZkkqQUA9m4w with LGE LG-R105).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mapillary_(wsp_us)_2017-05-20_23H40M03S000_(369921910999625_at_wP9xKvtP2DVZkkqQUA9m4w_with_LGE_LG-R105).jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/94/Mapillary_%28wsp_us%29_2017-05-20_23H40M03S000_%28369921910999625_at_wP9xKvtP2DVZkkqQUA9m4w_with_LGE_LG-R105%29.jpg/960px-Mapillary_%28wsp_us%29_2017-05-20_23H40M03S000_%28369921910999625_at_wP9xKvtP2DVZkkqQUA9m4w_with_LGE_LG-R105%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/9/94/Mapillary_%28wsp_us%29_2017-05-20_23H40M03S000_%28369921910999625_at_wP9xKvtP2DVZkkqQUA9m4w_with_LGE_LG-R105%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 5660,
+    "h": 2830,
+    "license": "CC BY-SA 4.0",
+    "author": "wsp_us",
+    "attribution_required": true,
+    "desc": "Photo from Mapillary"
+   },
+   {
+    "title": "File:Mapillary (wsp us) 2017-05-20 23H40M07S000 (480789223121316 at wP9xKvtP2DVZkkqQUA9m4w with LGE LG-R105).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mapillary_(wsp_us)_2017-05-20_23H40M07S000_(480789223121316_at_wP9xKvtP2DVZkkqQUA9m4w_with_LGE_LG-R105).jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/db/Mapillary_%28wsp_us%29_2017-05-20_23H40M07S000_%28480789223121316_at_wP9xKvtP2DVZkkqQUA9m4w_with_LGE_LG-R105%29.jpg/960px-Mapillary_%28wsp_us%29_2017-05-20_23H40M07S000_%28480789223121316_at_wP9xKvtP2DVZkkqQUA9m4w_with_LGE_LG-R105%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/d/db/Mapillary_%28wsp_us%29_2017-05-20_23H40M07S000_%28480789223121316_at_wP9xKvtP2DVZkkqQUA9m4w_with_LGE_LG-R105%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 5660,
+    "h": 2830,
+    "license": "CC BY-SA 4.0",
+    "author": "wsp_us",
+    "attribution_required": true,
+    "desc": "Photo from Mapillary"
+   },
+   {
+    "title": "File:Mapillary (wsp us) 2017-05-20 23H40M11S000 (467958897828945 at wP9xKvtP2DVZkkqQUA9m4w with LGE LG-R105).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mapillary_(wsp_us)_2017-05-20_23H40M11S000_(467958897828945_at_wP9xKvtP2DVZkkqQUA9m4w_with_LGE_LG-R105).jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/49/Mapillary_%28wsp_us%29_2017-05-20_23H40M11S000_%28467958897828945_at_wP9xKvtP2DVZkkqQUA9m4w_with_LGE_LG-R105%29.jpg/960px-Mapillary_%28wsp_us%29_2017-05-20_23H40M11S000_%28467958897828945_at_wP9xKvtP2DVZkkqQUA9m4w_with_LGE_LG-R105%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/4/49/Mapillary_%28wsp_us%29_2017-05-20_23H40M11S000_%28467958897828945_at_wP9xKvtP2DVZkkqQUA9m4w_with_LGE_LG-R105%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 5660,
+    "h": 2830,
+    "license": "CC BY-SA 4.0",
+    "author": "wsp_us",
+    "attribution_required": true,
+    "desc": "Photo from Mapillary"
+   },
+   {
+    "title": "File:Mapillary (wsp us) 2017-05-20 23H40M09S000 (144818120937132 at wP9xKvtP2DVZkkqQUA9m4w with LGE LG-R105).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mapillary_(wsp_us)_2017-05-20_23H40M09S000_(144818120937132_at_wP9xKvtP2DVZkkqQUA9m4w_with_LGE_LG-R105).jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a3/Mapillary_%28wsp_us%29_2017-05-20_23H40M09S000_%28144818120937132_at_wP9xKvtP2DVZkkqQUA9m4w_with_LGE_LG-R105%29.jpg/960px-Mapillary_%28wsp_us%29_2017-05-20_23H40M09S000_%28144818120937132_at_wP9xKvtP2DVZkkqQUA9m4w_with_LGE_LG-R105%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/a/a3/Mapillary_%28wsp_us%29_2017-05-20_23H40M09S000_%28144818120937132_at_wP9xKvtP2DVZkkqQUA9m4w_with_LGE_LG-R105%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 5660,
+    "h": 2830,
+    "license": "CC BY-SA 4.0",
+    "author": "wsp_us",
+    "attribution_required": true,
+    "desc": "Photo from Mapillary"
+   },
+   {
+    "title": "File:Mapillary (wsp us) 2017-05-20 23H40M13S000 (361624481953545 at wP9xKvtP2DVZkkqQUA9m4w with LGE LG-R105).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mapillary_(wsp_us)_2017-05-20_23H40M13S000_(361624481953545_at_wP9xKvtP2DVZkkqQUA9m4w_with_LGE_LG-R105).jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5f/Mapillary_%28wsp_us%29_2017-05-20_23H40M13S000_%28361624481953545_at_wP9xKvtP2DVZkkqQUA9m4w_with_LGE_LG-R105%29.jpg/960px-Mapillary_%28wsp_us%29_2017-05-20_23H40M13S000_%28361624481953545_at_wP9xKvtP2DVZkkqQUA9m4w_with_LGE_LG-R105%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/5/5f/Mapillary_%28wsp_us%29_2017-05-20_23H40M13S000_%28361624481953545_at_wP9xKvtP2DVZkkqQUA9m4w_with_LGE_LG-R105%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 5660,
+    "h": 2830,
+    "license": "CC BY-SA 4.0",
+    "author": "wsp_us",
+    "attribution_required": true,
+    "desc": "Photo from Mapillary"
+   }
+  ],
+  "total": 11,
+  "seen": 50
+ },
+ {
+  "code": "taj-mahal",
+  "name": "Taj Mahal",
+  "candidates": [
+   {
+    "title": "File:Pano-20230403-Gateway-of-India.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pano-20230403-Gateway-of-India.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bc/Pano-20230403-Gateway-of-India.jpg/960px-Pano-20230403-Gateway-of-India.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/b/bc/Pano-20230403-Gateway-of-India.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 6528,
+    "h": 3264,
+    "license": "CC BY-SA 4.0",
+    "author": "Fuzheado",
+    "attribution_required": true,
+    "desc": "Gateway of India, Mumbai, India, panoramic 360 photo"
+   },
+   {
+    "title": "File:Pano-20230403-Taj-Mumbai-Grandstaircase.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pano-20230403-Taj-Mumbai-Grandstaircase.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0e/Pano-20230403-Taj-Mumbai-Grandstaircase.jpg/960px-Pano-20230403-Taj-Mumbai-Grandstaircase.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/0/0e/Pano-20230403-Taj-Mumbai-Grandstaircase.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 6528,
+    "h": 3264,
+    "license": "CC BY-SA 4.0",
+    "author": "Fuzheado",
+    "attribution_required": true,
+    "desc": "Taj Hotel, Grand Staircase, interior, Mumbai, India, panoramic 360 photo"
+   }
+  ],
+  "total": 2,
+  "seen": 30
+ },
+ {
+  "code": "colosseum",
+  "name": "Đấu trường La Mã",
+  "candidates": [
+   {
+    "title": "File:Colosseum – Panorama (Greg Zaal and Rico Cilliers via Poly Haven).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Colosseum_%E2%80%93_Panorama_(Greg_Zaal_and_Rico_Cilliers_via_Poly_Haven).jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b9/Colosseum_%E2%80%93_Panorama_%28Greg_Zaal_and_Rico_Cilliers_via_Poly_Haven%29.jpg/960px-Colosseum_%E2%80%93_Panorama_%28Greg_Zaal_and_Rico_Cilliers_via_Poly_Haven%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/b/b9/Colosseum_%E2%80%93_Panorama_%28Greg_Zaal_and_Rico_Cilliers_via_Poly_Haven%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 8192,
+    "h": 4096,
+    "license": "CC0",
+    "author": "Greg Zaal (Panorama) Rico Cilliers (Backplates)",
+    "attribution_required": false,
+    "desc": "Panorama with a view of the Colosseum. EVs: 22, WB: 5400 K."
+   }
+  ],
+  "total": 1,
+  "seen": 38
+ },
+ {
+  "code": "liberty",
+  "name": "Tượng Nữ thần Tự do",
+  "candidates": [
+   {
+    "title": "File:Statue of Liberty, Paris 25 March 2007.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Statue_of_Liberty,_Paris_25_March_2007.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8c/Statue_of_Liberty%2C_Paris_25_March_2007.jpg/960px-Statue_of_Liberty%2C_Paris_25_March_2007.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/8/8c/Statue_of_Liberty%2C_Paris_25_March_2007.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 7500,
+    "h": 3750,
+    "license": "CC BY-SA 2.0",
+    "author": "Alexandre Duret-Lutz from Paris, France",
+    "attribution_required": true,
+    "desc": "Statue of liberty Paris."
+   }
+  ],
+  "total": 1,
+  "seen": 51
+ },
+ {
+  "code": "giza",
+  "name": "Kim tự tháp Giza",
+  "candidates": [],
+  "total": 0,
+  "seen": 1
+ },
+ {
+  "code": "sydney-opera",
+  "name": "Nhà hát Opera Sydney",
+  "candidates": [],
+  "total": 0,
+  "seen": 18
+ },
+ {
+  "code": "fuji",
+  "name": "Núi Phú Sĩ",
+  "candidates": [],
+  "total": 0,
+  "seen": 6
+ },
+ {
+  "code": "machu-picchu",
+  "name": "Machu Picchu",
+  "candidates": [
+   {
+    "title": "File:Mapillary (38thnbClp0kOZUc5WNDfYK) (jaderbavaresco) 2023-12-29 09H43M40S750 (751996310315754 via GoPro GoPro Max).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mapillary_(38thnbClp0kOZUc5WNDfYK)_(jaderbavaresco)_2023-12-29_09H43M40S750_(751996310315754_via_GoPro_GoPro_Max).jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/80/Mapillary_%2838thnbClp0kOZUc5WNDfYK%29_%28jaderbavaresco%29_2023-12-29_09H43M40S750_%28751996310315754_via_GoPro_GoPro_Max%29.jpg/960px-Mapillary_%2838thnbClp0kOZUc5WNDfYK%29_%28jaderbavaresco%29_2023-12-29_09H43M40S750_%28751996310315754_via_GoPro_GoPro_Max%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/8/80/Mapillary_%2838thnbClp0kOZUc5WNDfYK%29_%28jaderbavaresco%29_2023-12-29_09H43M40S750_%28751996310315754_via_GoPro_GoPro_Max%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 4096,
+    "h": 2048,
+    "license": "CC BY-SA 4.0",
+    "author": "jaderbavaresco",
+    "attribution_required": true,
+    "desc": "Photo from Mapillary"
+   },
+   {
+    "title": "File:Mapillary (38thnbClp0kOZUc5WNDfYK) (jaderbavaresco) 2023-12-29 09H43M46S673 (1135203490981810 via GoPro GoPro Max).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mapillary_(38thnbClp0kOZUc5WNDfYK)_(jaderbavaresco)_2023-12-29_09H43M46S673_(1135203490981810_via_GoPro_GoPro_Max).jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fc/Mapillary_%2838thnbClp0kOZUc5WNDfYK%29_%28jaderbavaresco%29_2023-12-29_09H43M46S673_%281135203490981810_via_GoPro_GoPro_Max%29.jpg/960px-Mapillary_%2838thnbClp0kOZUc5WNDfYK%29_%28jaderbavaresco%29_2023-12-29_09H43M46S673_%281135203490981810_via_GoPro_GoPro_Max%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/f/fc/Mapillary_%2838thnbClp0kOZUc5WNDfYK%29_%28jaderbavaresco%29_2023-12-29_09H43M46S673_%281135203490981810_via_GoPro_GoPro_Max%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 4096,
+    "h": 2048,
+    "license": "CC BY-SA 4.0",
+    "author": "jaderbavaresco",
+    "attribution_required": true,
+    "desc": "Photo from Mapillary"
+   },
+   {
+    "title": "File:Mapillary (38thnbClp0kOZUc5WNDfYK) (jaderbavaresco) 2023-12-29 09H43M49S258 (7701671086512845 via GoPro GoPro Max).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mapillary_(38thnbClp0kOZUc5WNDfYK)_(jaderbavaresco)_2023-12-29_09H43M49S258_(7701671086512845_via_GoPro_GoPro_Max).jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/24/Mapillary_%2838thnbClp0kOZUc5WNDfYK%29_%28jaderbavaresco%29_2023-12-29_09H43M49S258_%287701671086512845_via_GoPro_GoPro_Max%29.jpg/960px-Mapillary_%2838thnbClp0kOZUc5WNDfYK%29_%28jaderbavaresco%29_2023-12-29_09H43M49S258_%287701671086512845_via_GoPro_GoPro_Max%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/2/24/Mapillary_%2838thnbClp0kOZUc5WNDfYK%29_%28jaderbavaresco%29_2023-12-29_09H43M49S258_%287701671086512845_via_GoPro_GoPro_Max%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 4096,
+    "h": 2048,
+    "license": "CC BY-SA 4.0",
+    "author": "jaderbavaresco",
+    "attribution_required": true,
+    "desc": "Photo from Mapillary"
+   },
+   {
+    "title": "File:Mapillary (38thnbClp0kOZUc5WNDfYK) (jaderbavaresco) 2023-12-29 09H43M52S178 (7324758794221145 via GoPro GoPro Max).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mapillary_(38thnbClp0kOZUc5WNDfYK)_(jaderbavaresco)_2023-12-29_09H43M52S178_(7324758794221145_via_GoPro_GoPro_Max).jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b0/Mapillary_%2838thnbClp0kOZUc5WNDfYK%29_%28jaderbavaresco%29_2023-12-29_09H43M52S178_%287324758794221145_via_GoPro_GoPro_Max%29.jpg/960px-Mapillary_%2838thnbClp0kOZUc5WNDfYK%29_%28jaderbavaresco%29_2023-12-29_09H43M52S178_%287324758794221145_via_GoPro_GoPro_Max%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/b/b0/Mapillary_%2838thnbClp0kOZUc5WNDfYK%29_%28jaderbavaresco%29_2023-12-29_09H43M52S178_%287324758794221145_via_GoPro_GoPro_Max%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 4096,
+    "h": 2048,
+    "license": "CC BY-SA 4.0",
+    "author": "jaderbavaresco",
+    "attribution_required": true,
+    "desc": "Photo from Mapillary"
+   },
+   {
+    "title": "File:Mapillary (38thnbClp0kOZUc5WNDfYK) (jaderbavaresco) 2023-12-29 09H43M57S058 (1294565511353621 via GoPro GoPro Max).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mapillary_(38thnbClp0kOZUc5WNDfYK)_(jaderbavaresco)_2023-12-29_09H43M57S058_(1294565511353621_via_GoPro_GoPro_Max).jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/19/Mapillary_%2838thnbClp0kOZUc5WNDfYK%29_%28jaderbavaresco%29_2023-12-29_09H43M57S058_%281294565511353621_via_GoPro_GoPro_Max%29.jpg/960px-Mapillary_%2838thnbClp0kOZUc5WNDfYK%29_%28jaderbavaresco%29_2023-12-29_09H43M57S058_%281294565511353621_via_GoPro_GoPro_Max%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/1/19/Mapillary_%2838thnbClp0kOZUc5WNDfYK%29_%28jaderbavaresco%29_2023-12-29_09H43M57S058_%281294565511353621_via_GoPro_GoPro_Max%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 4096,
+    "h": 2048,
+    "license": "CC BY-SA 4.0",
+    "author": "jaderbavaresco",
+    "attribution_required": true,
+    "desc": "Photo from Mapillary"
+   },
+   {
+    "title": "File:Mapillary (38thnbClp0kOZUc5WNDfYK) (jaderbavaresco) 2023-12-29 09H44M03S648 (939282367708981 via GoPro GoPro Max).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mapillary_(38thnbClp0kOZUc5WNDfYK)_(jaderbavaresco)_2023-12-29_09H44M03S648_(939282367708981_via_GoPro_GoPro_Max).jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6d/Mapillary_%2838thnbClp0kOZUc5WNDfYK%29_%28jaderbavaresco%29_2023-12-29_09H44M03S648_%28939282367708981_via_GoPro_GoPro_Max%29.jpg/960px-Mapillary_%2838thnbClp0kOZUc5WNDfYK%29_%28jaderbavaresco%29_2023-12-29_09H44M03S648_%28939282367708981_via_GoPro_GoPro_Max%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/6/6d/Mapillary_%2838thnbClp0kOZUc5WNDfYK%29_%28jaderbavaresco%29_2023-12-29_09H44M03S648_%28939282367708981_via_GoPro_GoPro_Max%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 4096,
+    "h": 2048,
+    "license": "CC BY-SA 4.0",
+    "author": "jaderbavaresco",
+    "attribution_required": true,
+    "desc": "Photo from Mapillary"
+   },
+   {
+    "title": "File:Mapillary (38thnbClp0kOZUc5WNDfYK) (jaderbavaresco) 2023-12-29 09H44M13S366 (1516533315862874 via GoPro GoPro Max).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mapillary_(38thnbClp0kOZUc5WNDfYK)_(jaderbavaresco)_2023-12-29_09H44M13S366_(1516533315862874_via_GoPro_GoPro_Max).jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/64/Mapillary_%2838thnbClp0kOZUc5WNDfYK%29_%28jaderbavaresco%29_2023-12-29_09H44M13S366_%281516533315862874_via_GoPro_GoPro_Max%29.jpg/960px-Mapillary_%2838thnbClp0kOZUc5WNDfYK%29_%28jaderbavaresco%29_2023-12-29_09H44M13S366_%281516533315862874_via_GoPro_GoPro_Max%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/6/64/Mapillary_%2838thnbClp0kOZUc5WNDfYK%29_%28jaderbavaresco%29_2023-12-29_09H44M13S366_%281516533315862874_via_GoPro_GoPro_Max%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 4096,
+    "h": 2048,
+    "license": "CC BY-SA 4.0",
+    "author": "jaderbavaresco",
+    "attribution_required": true,
+    "desc": "Photo from Mapillary"
+   },
+   {
+    "title": "File:Mapillary (38thnbClp0kOZUc5WNDfYK) (jaderbavaresco) 2023-12-29 09H44M19S706 (399392899248357 via GoPro GoPro Max).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mapillary_(38thnbClp0kOZUc5WNDfYK)_(jaderbavaresco)_2023-12-29_09H44M19S706_(399392899248357_via_GoPro_GoPro_Max).jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8b/Mapillary_%2838thnbClp0kOZUc5WNDfYK%29_%28jaderbavaresco%29_2023-12-29_09H44M19S706_%28399392899248357_via_GoPro_GoPro_Max%29.jpg/960px-Mapillary_%2838thnbClp0kOZUc5WNDfYK%29_%28jaderbavaresco%29_2023-12-29_09H44M19S706_%28399392899248357_via_GoPro_GoPro_Max%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "file": "https://upload.wikimedia.org/wikipedia/commons/8/8b/Mapillary_%2838thnbClp0kOZUc5WNDfYK%29_%28jaderbavaresco%29_2023-12-29_09H44M19S706_%28399392899248357_via_GoPro_GoPro_Max%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "w": 4096,
+    "h": 2048,
+    "license": "CC BY-SA 4.0",
+    "author": "jaderbavaresco",
+    "attribution_required": true,
+    "desc": "Photo from Mapillary"
+   }
+  ],
+  "total": 9,
+  "seen": 10
+ },
+ {
+  "code": "angkor",
+  "name": "Angkor Wat",
+  "candidates": [],
+  "total": 0,
+  "seen": 0
+ }
+]
