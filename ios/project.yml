@@ -1,0 +1,42 @@
+# Mô tả dự án cho XcodeGen. Máy chủ build chạy `xcodegen generate` để sinh ra file .xcodeproj.
+name: TravelAtHome
+options:
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+targets:
+  TravelAtHome:
+    type: application
+    platform: iOS
+    sources:
+      - path: TravelAtHome
+      # Ảnh 360° dùng chung với bản web.
+      - path: ../assets/panos
+        buildPhase: resources
+        excludes:
+          - "*.md"
+    info:
+      path: TravelAtHome/Info.plist
+      properties:
+        CFBundleDisplayName: Travel at home
+        CFBundleShortVersionString: "0.1"
+        CFBundleVersion: "1"
+        UILaunchScreen: {}
+        UIRequiresFullScreen: true
+        UIStatusBarHidden: true
+        UIViewControllerBasedStatusBarAppearance: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        NSCameraUsageDescription: Dùng camera để quay hai ba con và ghép vào cảnh du lịch.
+        NSMicrophoneUsageDescription: Dùng micro để thu tiếng và nhận ra tiếng búng tay.
+        NSMotionUsageDescription: Dùng cảm biến xoay để cảnh nền đổi theo hướng máy.
+        NSPhotoLibraryAddUsageDescription: Lưu video đã quay vào thư viện ảnh.
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.travelathome.app
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGNING_ALLOWED: "NO"
+        CODE_SIGNING_REQUIRED: "NO"
+        CODE_SIGN_IDENTITY: ""
+        ENABLE_BITCODE: "NO"

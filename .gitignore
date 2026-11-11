@@ -1,2 +1,6 @@
 eval/
 assets/src/
+ios/build/
+ios/*.xcodeproj/
+ios/Payload/
+*.ipa

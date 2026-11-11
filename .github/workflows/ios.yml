@@ -1,0 +1,57 @@
+name: Build iOS (.ipa chưa ký)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "ios/**"
+      - "assets/panos/**"
+      - ".github/workflows/ios.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Xem phiên bản Xcode
+        run: xcodebuild -version
+
+      - name: Cài XcodeGen
+        run: brew install xcodegen
+
+      - name: Sinh dự án Xcode
+        working-directory: ios
+        run: xcodegen generate
+
+      - name: Build cho iPhone (không ký)
+        working-directory: ios
+        run: |
+          set -o pipefail
+          xcodebuild -project TravelAtHome.xcodeproj -target TravelAtHome \
+            -configuration Release -sdk iphoneos \
+            SYMROOT="$PWD/build" \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            build 2>&1 | tee build.log | grep -E "error:|warning: unre|BUILD|\*\*|^/.*: error" || true
+          grep -q "BUILD SUCCEEDED" build.log
+
+      - name: Đưa log lỗi ra khi build hỏng
+        if: failure()
+        working-directory: ios
+        run: grep -n -B2 -A6 "error:" build.log | head -200 || tail -80 build.log
+
+      - name: Đóng gói .ipa
+        working-directory: ios
+        run: |
+          mkdir -p Payload
+          cp -R build/Release-iphoneos/TravelAtHome.app Payload/
+          zip -qry TravelAtHome.ipa Payload
+          ls -la TravelAtHome.ipa
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TravelAtHome-ipa
+          path: ios/TravelAtHome.ipa
+          if-no-files-found: error
