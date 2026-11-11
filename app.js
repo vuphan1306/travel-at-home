@@ -8,7 +8,7 @@ const MODELS = {
   fine: `${MP_MODELS}/selfie_multiclass_256x256/float32/latest/selfie_multiclass_256x256.tflite`,  // 6 lớp, lớp 0 là nền
 };
 
-const VERSION = 'v9', ZOOM_MIN = 0.6, REF_W = 480;
+const VERSION = 'v10', ZOOM_MIN = 0.6;
 const qs = new URLSearchParams(location.search);
 const DEMO = qs.has('demo');          // không dùng camera: nguồn hình và mặt nạ giả lập
 const $ = (id) => document.getElementById(id);
@@ -18,8 +18,10 @@ const state = {
   invert: false, listen: true, mirror: true,
   // Tinh chỉnh mặt nạ: refStep = khoảng cách giữa các điểm lấy mẫu (tính theo điểm của mặt nạ tinh chỉnh),
   // sigmaC = mức khác màu được coi là "cùng một vật", temporal = phần tin vào khung mới ở chỗ đứng yên.
-  refine: true, refStep: 1.6, sigmaC: 0.10, temporal: 0.5, lo: 0.41, hi: 0.71, despill: 2.5, debug: false,
-  model: 'fine', roi: false,   // khoanh vùng: tắt, vì trên ảnh thật (PPM-100) nó làm mất người và tăng nhấp nháy
+  refine: true, refW: 720, refStep0: 2.2, refStep: 1.0, sigmaC: 0.10, sigmaC2: 0.07, temporal: 0.5,
+  lo: 0.41, hi: 0.71, despill: 1.5, debug: false,
+  model: 'fine', roi: true,                     // roi: tách lại riêng từng cụm người nhỏ (người đứng xa, bàn tay rời)
+  blobMin: 0.004, blobMax: 0.14, nRoi: 0,
   reveal: 0, revealTarget: 0,          // 0 = ở nhà, 1 = ở điểm đến
   heading0: 0,                          // hướng la bàn được canh làm tâm ảnh 360°
   fps: 0, segMs: 0, segBackend: '-', orient: DEMO ? 'chuột' : 'chưa có',
@@ -87,25 +89,34 @@ function startMouseOrientation() {
 }
 
 // ---------- WebGL ----------
-// Hai bước vẽ:
-//  1) "tinh chỉnh": mặt nạ thô 256x256 -> mặt nạ bám theo đường nét của hình thật, ổn định theo thời gian.
-//  2) "ghép": người + nền 360° + hiệu ứng chuyển cảnh.
+// Ba bước vẽ mỗi khung hình:
+//  1) tinh chỉnh thô: gộp các mặt nạ 256x256 (toàn khung + từng vùng người nhỏ) và kéo mép về đường biên màu.
+//  2) tinh chỉnh mịn: lọc lần nữa ở bước nhỏ hơn, rồi ổn định theo thời gian.
+//  3) ghép: người + nền 360° + hiệu ứng chuyển cảnh.
 const VS = `#version 300 es
 in vec2 aPos; out vec2 vUv; out vec2 vP;
 void main(){ vP=aPos; vUv=vec2(aPos.x*.5+.5, .5-aPos.y*.5); gl_Position=vec4(aPos,0.,1.); }`;
 
-// Bước 1. Toạ độ khung đích trùng toạ độ ảnh camera (gốc ở góc trên trái), nên bước 2 lấy mẫu thẳng theo zuv.
+// Toạ độ khung đích trùng toạ độ ảnh camera (gốc ở góc trên trái), nên bước ghép lấy mẫu thẳng theo zuv.
 const FS_REFINE = `#version 300 es
 precision highp float;
 out vec4 o;
-uniform sampler2D uVideo, uMask, uPrev;
+uniform sampler2D uVideo, uMask0, uMask1, uMask2, uTmp, uPrev;
 uniform vec2 uRes, uStep;
 uniform float uSigmaC, uInvert, uTemporal, uRefine;
-uniform vec4 uRoi;                      // vùng khoanh quanh người: x, y, rộng, cao (theo toạ độ ảnh camera)
+uniform vec4 uRoi1, uRoi2;              // vùng khoanh quanh người nhỏ: x, y, rộng, cao theo toạ độ ảnh camera
+uniform int uNum, uMode;                // uMode 0: bước thô đọc mặt nạ gốc; 1: bước mịn đọc kết quả bước thô
+float roiM(sampler2D t, vec4 r, vec2 q){
+  vec2 p=(q-r.xy)/r.zw;
+  vec2 e=smoothstep(vec2(0.),vec2(.06),p)*(1.-smoothstep(vec2(.94),vec2(1.),p));   // mờ dần ở mép vùng, tránh đường cắt
+  return texture(t,p).r*e.x*e.y;
+}
 float M(vec2 q){
-  vec2 r=(q-uRoi.xy)/uRoi.zw;
-  float m=texture(uMask,r).r; m=mix(m,1.-m,uInvert);
-  return m*step(0.,r.x)*step(r.x,1.)*step(0.,r.y)*step(r.y,1.);
+  if(uMode==1) return texture(uTmp,q).r;
+  float m=texture(uMask0,q).r;
+  if(uNum>1) m=max(m, roiM(uMask1,uRoi1,q));
+  if(uNum>2) m=max(m, roiM(uMask2,uRoi2,q));
+  return mix(m,1.-m,uInvert);
 }
 void main(){
   vec2 uv=gl_FragCoord.xy/uRes;
@@ -121,6 +132,7 @@ void main(){
     acc+=w*M(q); ws+=w;
   }
   float a=mix(m0, acc/ws, uRefine);
+  if(uMode==0){ o=vec4(a,0.,0.,1.); return; }
   // Chống nhấp nháy: chỗ hình đứng yên thì trộn với khung trước, chỗ đang chuyển động thì theo khung mới.
   vec4 prev=texture(uPrev,uv);
   float lum=dot(c0,vec3(.299,.587,.114));
@@ -150,16 +162,18 @@ void main(){
   vec3 raw=texture(uVideo,zuv).rgb;
   vec3 cam=raw*inside;
   float a=smoothstep(uLo,uHi,texture(uRef,zuv).r)*inside;
-  // Khử viền màu phòng: điểm nằm trên mép lấy màu từ phía trong thân người thay vì màu lẫn với tường.
-  vec2 g=vec2(texture(uRef,zuv+vec2(uRefTexel.x,0.)).r-texture(uRef,zuv-vec2(uRefTexel.x,0.)).r,
-              texture(uRef,zuv+vec2(0.,uRefTexel.y)).r-texture(uRef,zuv-vec2(0.,uRefTexel.y)).r);
-  float gn=length(g);
+  // Khử viền màu phòng: chỉ dải mép mỏng (a < 0,9) mượn màu, và chỉ lấy cách đó khoảng 2 điểm ảnh, từ phía trong thân người.
+  // Phần còn lại giữ nguyên hình thật, để không tạo ra vệt nhòe trên tay, tai, tóc.
   vec3 fg=raw;
-  if(gn>.02 && a<.999){ fg=mix(texture(uVideo, zuv+g/gn*uRefTexel*uDespill).rgb, raw, a); }
+  if(uDespill>0. && a>.003 && a<.9){
+    vec2 g=vec2(texture(uRef,zuv+vec2(uRefTexel.x,0.)).r-texture(uRef,zuv-vec2(uRefTexel.x,0.)).r,
+                texture(uRef,zuv+vec2(0.,uRefTexel.y)).r-texture(uRef,zuv-vec2(0.,uRefTexel.y)).r);
+    float gn=length(g);
+    if(gn>.02) fg=mix(texture(uVideo, zuv+g/gn*uRefTexel*uDespill).rgb, raw, smoothstep(.2,.9,a));
+  }
   // Ảnh thật của camera trước: bên phải ảnh là trục -X của máy.
   vec3 bg=pano(normalize(uRot*vec3(-vP.x*uTan.x, vP.y*uTan.y, 1.)));
   vec3 person=mix(fg, fg*uTint, uTintAmt);
-  person=mix(person, bg, a*(1.-a)*.5);                  // làm mềm viền bằng màu nền
   vec3 comp=mix(bg, person, a);
   float r=length(vec2(vP.x*uAspect, vP.y));
   float edge=uReveal*(length(vec2(uAspect,1.))+.35);
@@ -171,9 +185,12 @@ void main(){
 }`;
 
 const canvas = $('view');
-const gl = canvas.getContext('webgl2', { alpha: false, antialias: false, powerPreference: 'high-performance' });
-let prog, progRefine, U = {}, UR = {}, texVideo, texMask, texPano;
-const ref = { w: 0, h: 0, tex: [null, null], fbo: [null, null], cur: 0 };
+const gl = canvas.getContext('webgl2', { alpha: false, antialias: false, powerPreference: 'high-performance', preserveDrawingBuffer: qs.has('src') });
+let prog, progRefine, U = {}, UR = {}, texVideo, texPano;
+const texMasks = [];                       // mặt nạ gốc: [toàn khung, vùng nhỏ 1, vùng nhỏ 2]
+const MASK_UNITS = [1, 6, 7];
+const ref = { w: 0, h: 0, tex: [null, null, null], fbo: [null, null, null], cur: 0 };   // phần tử thứ 3 là kết quả bước thô
+let rois = [];                             // các vùng nhỏ đang dùng ở khung này
 
 function initGL() {
   if (!gl) throw new Error('Trình duyệt không hỗ trợ WebGL2');
@@ -193,17 +210,21 @@ function initGL() {
   };
   [prog, U] = build(FS, ['uVideo', 'uRef', 'uPano', 'uRot', 'uTan', 'uReveal', 'uAspect', 'uTintAmt', 'uTint', 'uZoom',
     'uVidScale', 'uSoft', 'uRefTexel', 'uLo', 'uHi', 'uDespill', 'uDebug']);
-  [progRefine, UR] = build(FS_REFINE, ['uVideo', 'uMask', 'uPrev', 'uRes', 'uStep', 'uSigmaC', 'uInvert', 'uTemporal', 'uRefine', 'uRoi']);
+  [progRefine, UR] = build(FS_REFINE, ['uVideo', 'uMask0', 'uMask1', 'uMask2', 'uTmp', 'uPrev', 'uRes', 'uStep', 'uSigmaC',
+    'uInvert', 'uTemporal', 'uRefine', 'uRoi1', 'uRoi2', 'uNum', 'uMode']);
   const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
   gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
-  texVideo = makeTex(0, gl.CLAMP_TO_EDGE); texMask = makeTex(1, gl.CLAMP_TO_EDGE); texPano = makeTex(2, gl.REPEAT);
-  // Đơn vị texture: 0 hình camera, 1 mặt nạ thô, 2 ảnh 360°, 3 mặt nạ đã tinh chỉnh, 4 mặt nạ khung trước.
-  gl.useProgram(prog); gl.uniform1i(U.uVideo, 0); gl.uniform1i(U.uRef, 3); gl.uniform1i(U.uPano, 2);
-  gl.useProgram(progRefine); gl.uniform1i(UR.uVideo, 0); gl.uniform1i(UR.uMask, 1); gl.uniform1i(UR.uPrev, 4);
   gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
-  gl.activeTexture(gl.TEXTURE1);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, 1, 1, 0, gl.RED, gl.UNSIGNED_BYTE, new Uint8Array([0]));
+  texVideo = makeTex(0, gl.CLAMP_TO_EDGE); texPano = makeTex(2, gl.REPEAT);
+  for (const u of MASK_UNITS) {
+    texMasks.push(makeTex(u, gl.CLAMP_TO_EDGE));
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, 1, 1, 0, gl.RED, gl.UNSIGNED_BYTE, new Uint8Array([0]));
+  }
+  // Đơn vị texture: 0 hình camera, 1/6/7 mặt nạ gốc, 2 ảnh 360°, 3 mặt nạ đã tinh chỉnh, 4 mặt nạ khung trước, 8 kết quả bước thô.
+  gl.useProgram(prog); gl.uniform1i(U.uVideo, 0); gl.uniform1i(U.uRef, 3); gl.uniform1i(U.uPano, 2);
+  gl.useProgram(progRefine); gl.uniform1i(UR.uVideo, 0); gl.uniform1i(UR.uPrev, 4); gl.uniform1i(UR.uTmp, 8);
+  gl.uniform1i(UR.uMask0, 1); gl.uniform1i(UR.uMask1, 6); gl.uniform1i(UR.uMask2, 7);
 }
 function makeTex(unit, wrapS) {
   const t = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, t);
@@ -214,9 +235,9 @@ function makeTex(unit, wrapS) {
   return t;
 }
 function ensureRef(av) {                  // mặt nạ tinh chỉnh có cùng tỉ lệ với ảnh camera
-  const w = REF_W, h = Math.max(16, Math.round(REF_W / av));
+  const w = state.refW, h = Math.max(16, Math.round(state.refW / av));
   if (ref.w === w && ref.h === h) return;
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < 3; i++) {
     if (ref.tex[i]) { gl.deleteTexture(ref.tex[i]); gl.deleteFramebuffer(ref.fbo[i]); }
     ref.tex[i] = makeTex(5, gl.CLAMP_TO_EDGE);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
@@ -230,17 +251,27 @@ function ensureRef(av) {                  // mặt nạ tinh chỉnh có cùng t
 function refinePass() {
   const nxt = 1 - ref.cur;
   gl.useProgram(progRefine);
-  gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D, ref.tex[ref.cur]);
   gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, null);
-  gl.bindFramebuffer(gl.FRAMEBUFFER, ref.fbo[nxt]);
+  gl.activeTexture(gl.TEXTURE8); gl.bindTexture(gl.TEXTURE_2D, null);
+  gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D, ref.tex[ref.cur]);
   gl.viewport(0, 0, ref.w, ref.h);
   gl.uniform2f(UR.uRes, ref.w, ref.h);
-  gl.uniform2f(UR.uStep, state.refStep / ref.w, state.refStep / ref.h);
-  gl.uniform1f(UR.uSigmaC, state.sigmaC);
   gl.uniform1f(UR.uInvert, state.invert ? 1 : 0);
   gl.uniform1f(UR.uTemporal, state.temporal);
   gl.uniform1f(UR.uRefine, state.refine ? 1 : 0);
-  gl.uniform4f(UR.uRoi, maskRoi.x, maskRoi.y, maskRoi.w, maskRoi.h);
+  gl.uniform1i(UR.uNum, 1 + rois.length);
+  const r1 = rois[0] || FULL, r2 = rois[1] || FULL;
+  gl.uniform4f(UR.uRoi1, r1.x, r1.y, r1.w, r1.h); gl.uniform4f(UR.uRoi2, r2.x, r2.y, r2.w, r2.h);
+  // bước thô
+  gl.bindFramebuffer(gl.FRAMEBUFFER, ref.fbo[2]);
+  gl.uniform1i(UR.uMode, 0);
+  gl.uniform2f(UR.uStep, state.refStep0 / ref.w, state.refStep0 / ref.h); gl.uniform1f(UR.uSigmaC, state.sigmaC);
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  // bước mịn + ổn định theo thời gian
+  gl.activeTexture(gl.TEXTURE8); gl.bindTexture(gl.TEXTURE_2D, ref.tex[2]);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, ref.fbo[nxt]);
+  gl.uniform1i(UR.uMode, 1);
+  gl.uniform2f(UR.uStep, state.refStep / ref.w, state.refStep / ref.h); gl.uniform1f(UR.uSigmaC, state.sigmaC2);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   ref.cur = nxt;
@@ -253,6 +284,20 @@ function readAlpha() {                    // dùng cho bộ chấm điểm: đ�
   const out = new Uint8Array(ref.w * ref.h);
   for (let i = 0; i < out.length; i++) out[i] = px[i * 4];
   return { w: ref.w, h: ref.h, data: out };
+}
+// Một khung hình trọn vẹn: tách người (kể cả các vùng người nhỏ), đưa hình và mặt nạ lên GPU, tinh chỉnh.
+function processFrame(src, t, given) {
+  const masks = given || (segmenter ? segmentAll(src, t) : null);
+  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, texVideo);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
+  if (masks && masks.length) {
+    rois = masks.slice(1).map((m) => m.roi);
+    masks.forEach((m, i) => {
+      gl.activeTexture(gl.TEXTURE0 + MASK_UNITS[i]); gl.bindTexture(gl.TEXTURE_2D, texMasks[i]);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, m.w, m.h, 0, gl.RED, gl.UNSIGNED_BYTE, m.data);
+    });
+  }
+  refinePass();
 }
 
 // ---------- Ảnh 360° ----------
@@ -412,52 +457,82 @@ async function initSegmenter() {
   try { segmenter = await make(want); state.segBackend = want; }
   catch (e) { console.warn('GPU delegate lỗi, chuyển CPU', e); segmenter = await make('CPU'); state.segBackend = 'CPU'; }
 }
-// Khoanh vùng quanh người. Model chỉ nhìn ảnh 256x256, nên nếu đưa cả khung hình thì người nhỏ sẽ bị thô.
-// Cắt sát quanh người rồi mới đưa vào model thì cùng 256x256 đó phủ lên người với mật độ cao hơn.
+
+// Model chỉ nhìn ảnh 256x256 và được dạy trên ảnh selfie, nên người đứng xa (nhỏ trong khung) bị tách thô hoặc sai.
+// Cách xử lý: sau lượt tách toàn khung, tìm các cụm người nhỏ trong mặt nạ, cắt sát quanh từng cụm rồi tách lại.
+// Trong ảnh cắt, người đó to như một ảnh selfie bình thường, nên model làm tốt hơn hẳn. Kết quả các lượt được gộp lại.
 const FULL = { x: 0, y: 0, w: 1, h: 1 };
-let maskRoi = FULL, roiNext = null, segCount = 0, roiCanvas = null;
-function planRoi(f, w, h, R) {            // từ mặt nạ vừa có, tính vùng khoanh cho khung sau
-  let x0 = w, y0 = h, x1 = -1, y1 = -1;
-  for (let y = 0; y < h; y++) for (let x = 0, i = y * w; x < w; x++, i++) if (f[i] > 90) {
-    if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
-  }
-  if (x1 < 0) return null;                // không thấy ai: khung sau nhìn lại toàn cảnh
-  const bx0 = R.x + x0 / w * R.w, bx1 = R.x + (x1 + 1) / w * R.w, by0 = R.y + y0 / h * R.h, by1 = R.y + (y1 + 1) / h * R.h;
-  const grow = (m) => {
-    const d = { x: Math.max(0, bx0 - m), y: Math.max(0, by0 - m) };
-    d.w = Math.min(1, bx1 + m) - d.x; d.h = Math.min(1, by1 + m) - d.y; return d;
-  };
-  const want = grow(0.10), need = grow(0.035);
-  const inside = R.x <= need.x + 1e-4 && R.y <= need.y + 1e-4 && R.x + R.w >= need.x + need.w - 1e-4 && R.y + R.h >= need.y + need.h - 1e-4;
-  // Giữ nguyên vùng cũ khi còn vừa, để lưới lấy mẫu không xê dịch từng khung (gây rung viền).
-  const next = inside && R.w * R.h <= 1.45 * want.w * want.h ? R : want;
-  return next.w * next.h > 0.85 ? null : next;
-}
-function segment(src, t) {
+const maskBufs = [null, null, null];
+let roiCanvas = null, segTs = 0;
+function runSeg(input, slot) {
   let out = null;
-  const t0 = performance.now();
-  const sw = src.videoWidth || src.width, sh = src.videoHeight || src.height;
-  // Cứ 20 khung thì nhìn lại toàn cảnh một lần, phòng khi có người mới bước vào từ ngoài vùng khoanh.
-  const R = state.roi && roiNext && segCount % 20 !== 19 ? roiNext : FULL;
-  segCount++;
-  let input = src;
-  if (R !== FULL) {
-    if (!roiCanvas) { roiCanvas = document.createElement('canvas'); roiCanvas.width = roiCanvas.height = 256; }
-    roiCanvas.getContext('2d').drawImage(src, R.x * sw, R.y * sh, R.w * sw, R.h * sh, 0, 0, 256, 256);
-    input = roiCanvas;
-  }
-  segmenter.segmentForVideo(input, t, (res) => {
+  segTs = Math.max(segTs + 1, performance.now());           // model đòi mốc thời gian tăng dần giữa các lượt
+  segmenter.segmentForVideo(input, segTs, (res) => {
     const masks = res.confidenceMasks; if (!masks || !masks.length) return;
     // Model nhiều lớp: lớp 0 là nền, người = 1 - nền. Model một lớp: mặt nạ cuối là người.
     const multi = masks.length >= 3, m = multi ? masks[0] : masks[masks.length - 1];
     const f = m.getAsFloat32Array(), n = m.width * m.height;
-    if (!maskU8 || maskU8.length !== n) maskU8 = new Uint8Array(n);
-    if (multi) for (let i = 0; i < n; i++) maskU8[i] = (1 - f[i]) * 255;
-    else for (let i = 0; i < n; i++) maskU8[i] = f[i] * 255;
-    out = { data: maskU8, w: m.width, h: m.height };
+    if (!maskBufs[slot] || maskBufs[slot].length !== n) maskBufs[slot] = new Uint8Array(n);
+    const b = maskBufs[slot];
+    if (multi) for (let i = 0; i < n; i++) b[i] = (1 - f[i]) * 255;
+    else for (let i = 0; i < n; i++) b[i] = f[i] * 255;
+    out = { data: b, w: m.width, h: m.height };
   });
-  if (out) { maskRoi = R; roiNext = state.roi ? planRoi(out.data, out.w, out.h, R) : null; }
+  return out;
+}
+const G = 64, gCell = new Uint8Array(G * G), gLab = new Int16Array(G * G), gStack = new Int32Array(G * G);
+function findSmallBlobs(m) {              // tìm các cụm người nhỏ trong mặt nạ toàn khung, trả tối đa 2 vùng cắt
+  for (let y = 0; y < G; y++) for (let x = 0; x < G; x++)
+    gCell[y * G + x] = m.data[Math.floor((y + 0.5) / G * m.h) * m.w + Math.floor((x + 0.5) / G * m.w)] > 110 ? 1 : 0;
+  gLab.fill(0);
+  const comps = [];
+  for (let i = 0; i < G * G; i++) {
+    if (!gCell[i] || gLab[i]) continue;
+    let n = 0, x0 = G, y0 = G, x1 = -1, y1 = -1, sp = 0;
+    gStack[sp++] = i; gLab[i] = 1;
+    while (sp) {
+      const c = gStack[--sp], cx = c % G, cy = (c - cx) / G;
+      n++; if (cx < x0) x0 = cx; if (cx > x1) x1 = cx; if (cy < y0) y0 = cy; if (cy > y1) y1 = cy;
+      if (cx > 0 && gCell[c - 1] && !gLab[c - 1]) { gLab[c - 1] = 1; gStack[sp++] = c - 1; }
+      if (cx < G - 1 && gCell[c + 1] && !gLab[c + 1]) { gLab[c + 1] = 1; gStack[sp++] = c + 1; }
+      if (cy > 0 && gCell[c - G] && !gLab[c - G]) { gLab[c - G] = 1; gStack[sp++] = c - G; }
+      if (cy < G - 1 && gCell[c + G] && !gLab[c + G]) { gLab[c + G] = 1; gStack[sp++] = c + G; }
+    }
+    comps.push({ n, x0, y0, x1: x1 + 1, y1: y1 + 1 });
+  }
+  const out = [];
+  comps.sort((a, b) => b.n - a.n);
+  for (const c of comps) {
+    const frac = c.n / (G * G);
+    if (frac < state.blobMin || frac > state.blobMax) continue;   // quá nhỏ là nhiễu, quá lớn là người ở gần (đã tách tốt)
+    const bw = (c.x1 - c.x0) / G, bh = (c.y1 - c.y0) / G;
+    const mx = Math.max(0.5 * bw, 0.07), my = Math.max(0.5 * bh, 0.07);
+    // Làm tròn ra lưới 1/16 khung: vùng cắt đứng yên khi người chỉ nhích nhẹ, để mép không rung theo từng khung.
+    const q = (v, up) => Math.min(1, Math.max(0, (up ? Math.ceil(v * 16) : Math.floor(v * 16)) / 16));
+    const x = q(c.x0 / G - mx, false), y = q(c.y0 / G - my, false);
+    const r = { x, y, w: q(c.x1 / G + mx, true) - x, h: q(c.y1 / G + my, true) - y };
+    if (r.w * r.h < 0.7) out.push(r);
+    if (out.length === 2) break;
+  }
+  return out;
+}
+function segmentAll(src, t) {
+  const t0 = performance.now();
+  const sw = src.videoWidth || src.width, sh = src.videoHeight || src.height;
+  const full = runSeg(src, 0);
+  if (!full) return null;
+  const out = [{ ...full, roi: FULL }];
+  if (state.roi) {
+    if (!roiCanvas) { roiCanvas = document.createElement('canvas'); roiCanvas.width = roiCanvas.height = 256; }
+    const cx = roiCanvas.getContext('2d');
+    for (const R of findSmallBlobs(full)) {
+      cx.drawImage(src, R.x * sw, R.y * sh, R.w * sw, R.h * sh, 0, 0, 256, 256);
+      const m = runSeg(roiCanvas, out.length);
+      if (m) out.push({ ...m, roi: R });
+    }
+  }
   state.segMs = state.segMs * 0.9 + (performance.now() - t0) * 0.1;
+  state.nRoi = out.length - 1;
   return out;
 }
 
@@ -541,22 +616,15 @@ function tick(now) {
   if (d) state.reveal += Math.sign(d) * Math.min(Math.abs(d), dt / 0.6);
 
   let mask = null;
-  if (demoCanvas) { mask = drawDemo(now); newFrame = true; maskRoi = FULL; }
+  if (demoCanvas) { mask = drawDemo(now); newFrame = true; }
   else if (stillCanvas) newFrame = true;
   else { newFrame = video.currentTime !== lastVideoTime; lastVideoTime = video.currentTime; }
   const aspect = canvas.width / canvas.height;
   const av = (frameSrc.videoWidth || frameSrc.width) / (frameSrc.videoHeight || frameSrc.height) || aspect;
   ensureRef(av);
   if (newFrame && (frameSrc.videoWidth || frameSrc.width)) {
-    if (segmenter && !demoCanvas) mask = segment(frameSrc, now) || null;
-    else if (segmenter && qs.has('seg')) segment(frameSrc, now);      // chỉ để đo tốc độ khi giả lập
-    gl.activeTexture(gl.TEXTURE0);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, frameSrc);
-    if (mask) {
-      gl.activeTexture(gl.TEXTURE1);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, mask.w, mask.h, 0, gl.RED, gl.UNSIGNED_BYTE, mask.data);
-    }
-    refinePass();
+    if (demoCanvas && segmenter && qs.has('seg')) segmentAll(frameSrc, now);   // chỉ để đo tốc độ khi giả lập
+    processFrame(frameSrc, now, demoCanvas ? [{ ...mask, roi: FULL }] : null);
     frames++;
   }
   const m = mul(rotZ(state.heading0 - (state.panoLon || 0)), orientAt(now - state.delayMs));
@@ -582,7 +650,7 @@ function tick(now) {
     state.fps = frames * 1000 / (now - fpsT); frames = 0; fpsT = now;
     $('hud').textContent =
       `${VERSION}  ${canvas.width}x${canvas.height}  ${state.fps.toFixed(0)} fps  cam ${frameSrc.videoWidth || frameSrc.width}x${frameSrc.videoHeight || frameSrc.height}\n` +
-      `tách người: ${state.model === 'fine' ? 'kỹ' : 'nhanh'} ${state.segBackend} ${state.segMs.toFixed(1)} ms\n` +
+      `tách người: ${state.model === 'fine' ? 'kỹ' : 'nhanh'} ${state.segBackend} ${state.segMs.toFixed(1)} ms  vùng nhỏ: ${state.nRoi}\n` +
       `xoay: ${state.orient}  zoom ${state.zoom.toFixed(1)}x${state.camInfo ? '\n' + state.camInfo : ''}${recorder ? '\n● đang quay' : ''}`;
   }
 }
@@ -670,16 +738,9 @@ $('go').onclick = start;
 // ---------- Móc nối cho bộ chấm điểm (tools/eval.js) ----------
 function evalFrame(src) {                 // chạy đúng chuỗi tách người + tinh chỉnh trên một khung hình cho trước
   frameSrc = src; ensureRef(src.width / src.height);
-  const mask = segmenter ? segment(src, performance.now()) : null;
-  gl.activeTexture(gl.TEXTURE0);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
-  if (mask) {
-    gl.activeTexture(gl.TEXTURE1);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, mask.w, mask.h, 0, gl.RED, gl.UNSIGNED_BYTE, mask.data);
-  }
-  refinePass();
+  processFrame(src, performance.now());
   return readAlpha();
 }
-function resetRef() { ref.w = 0; roiNext = null; maskRoi = FULL; segCount = 0; }        // xoá trí nhớ khung trước giữa hai bài thử
+function resetRef() { ref.w = 0; rois = []; }                // xoá trí nhớ khung trước giữa hai bài thử
 async function setModel(kind) { if (state.model !== kind || !segmenter) { state.model = kind; await initSegmenter(); } }
 window.__tah = { state, onSnap, centerPano, readAlpha, evalFrame, resetRef, setModel };   // để kiểm thử từ console

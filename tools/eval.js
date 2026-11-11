@@ -43,7 +43,7 @@ export async function prepare(url) {
   const dw = img.naturalWidth * sc, dh = img.naturalHeight * sc;
   px.drawImage(img, (FW - dw) / 2, (FH - dh) / 2, dw, dh);
   await T().setModel('fine');
-  Object.assign(st, { refine: true, temporal: 1, invert: false, roi: false });
+  applyCfg(st, { roi: false, temporal: 1 });
   T().resetRef();
   let a; for (let i = 0; i < 3; i++) a = T().evalFrame(photo);
   // phóng mặt nạ lên cỡ khung
@@ -96,6 +96,8 @@ const LAYOUTS = {
   'gần': [{ s: 1, x: 0, flip: false }],
   'vừa': [{ s: 0.62, x: 0.19, flip: false }],
   'hai người': [{ s: 0.6, x: 0.38, flip: false }, { s: 0.42, x: 0.02, flip: true }],
+  'một gần một xa': [{ s: 0.66, x: 0.34, flip: false }, { s: 0.25, x: 0.05, flip: true }],
+  'xa': [{ s: 0.3, x: 0.35, flip: false }],
 };
 
 function compose(bgName, layoutName, frame, motion, noiseSeed) {
@@ -124,13 +126,39 @@ function gtAt(gtCanvas, w, h) {            // đáp án thu về cỡ của mặ
   for (let i = 0; i < out.length; i++) out[i] = d[i * 4 + 3] / 255;
   return out;
 }
+// Chấm ở đúng độ phân giải của khung hình: phóng mặt nạ tinh chỉnh lên như bước ghép sẽ làm (nội suy tuyến tính),
+// rồi so với đáp án cỡ đầy đủ. Nhờ vậy điểm phản ánh cả độ sắc của mép, không chỉ vị trí của nó.
+function upAlpha(a) {
+  const c = mk(a.w, a.h), cx = c.getContext('2d'), id = cx.createImageData(a.w, a.h);
+  for (let i = 0; i < a.data.length; i++) { id.data[i * 4] = a.data[i]; id.data[i * 4 + 3] = 255; }
+  cx.putImageData(id, 0, 0);
+  const b = mk(FW, FH), bx = b.getContext('2d', { willReadFrequently: true });
+  bx.imageSmoothingEnabled = true; bx.drawImage(c, 0, 0, FW, FH);
+  const d = bx.getImageData(0, 0, FW, FH).data, out = new Uint8Array(FW * FH);
+  for (let i = 0; i < out.length; i++) out[i] = d[i * 4];
+  return out;
+}
+function gtFull(src, channel) {            // channel 3: kênh trong suốt của lớp người ghép; 0: ảnh xám của mặt nạ chuẩn
+  const c = mk(FW, FH), cx = c.getContext('2d', { willReadFrequently: true });
+  cx.drawImage(src, 0, 0, FW, FH);
+  const d = cx.getImageData(0, 0, FW, FH).data, out = new Float32Array(FW * FH);
+  for (let i = 0; i < out.length; i++) out[i] = d[i * 4 + channel] / 255;
+  return out;
+}
+function applyCfg(st, cfg) {
+  Object.assign(st, {
+    refine: cfg.refine ?? true, refW: cfg.refW ?? 720, refStep0: cfg.refStep0 ?? 2.2, refStep: cfg.refStep ?? 1.0,
+    sigmaC: cfg.sigmaC ?? 0.1, sigmaC2: cfg.sigmaC2 ?? 0.07, temporal: cfg.temporal ?? 0.5, invert: false,
+    roi: cfg.roi ?? true, blobMin: cfg.blobMin ?? 0.004, blobMax: cfg.blobMax ?? 0.14,
+  });
+}
 const sstep = (lo, hi, v) => { const t = Math.min(1, Math.max(0, (v - lo) / (hi - lo))); return t * t * (3 - 2 * t); };
 
-function score(alpha, gt, w, h, lo, hi) {
+function score(alpha, gt, w, h, lo, hi, R = 6) {
   // vùng mép: mọi điểm cách đường biên đáp án không quá ~6 điểm
   const edge = new Float32Array(w * h);
   for (let i = 0; i < edge.length; i++) edge[i] = gt[i] > 0.02 && gt[i] < 0.98 ? 1 : 0;
-  const band = boxBlur(edge, w, h, 6);
+  const band = boxBlur(edge, w, h, R);
   let sum = 0, es = 0, en = 0, leak = 0, bgN = 0, miss = 0, fgN = 0;
   for (let i = 0; i < gt.length; i++) {
     const a = sstep(lo, hi, alpha[i] / 255), e = Math.abs(a - gt[i]);
@@ -146,7 +174,7 @@ function score(alpha, gt, w, h, lo, hi) {
 export async function run(cfg = {}) {
   const st = T().state; st.paused = true;
   await T().setModel(cfg.model || 'fast');
-  Object.assign(st, { refine: cfg.refine ?? true, sigmaC: cfg.sigmaC ?? 0.1, refStep: cfg.refStep ?? 1.6, temporal: cfg.temporal ?? 0.5, invert: false, roi: cfg.roi ?? false });
+  applyCfg(st, cfg);
   const lo = cfg.lo ?? 0.41, hi = cfg.hi ?? 0.71, frames = cfg.frames ?? 6;
   const rows = [], agg = { tong: 0, vien: 0, lotNen: 0, matNguoi: 0, nhapNhay: 0, n: 0 };
   let seed = 1;
@@ -159,7 +187,7 @@ export async function run(cfg = {}) {
       if (!motion && prev) { let dsum = 0; for (let i = 0; i < a.data.length; i++) dsum += Math.abs(sstep(lo, hi, a.data[i] / 255) - sstep(lo, hi, prev[i] / 255)); flick += dsum / a.data.length; }
       prev = a.data; last = a; lastGt = gt;
     }
-    const s = score(last.data, gtAt(lastGt, last.w, last.h), last.w, last.h, lo, hi);
+    const s = score(upAlpha(last), gtFull(lastGt, 3), FW, FH, lo, hi, 9);
     s.nhapNhay = motion ? null : 1000 * flick / (frames - 1);
     rows.push({ bg, lay, motion, ...Object.fromEntries(Object.entries(s).map(([k, v]) => [k, v == null ? null : +v.toFixed(2)])) });
     for (const k of ['tong', 'vien', 'lotNen', 'matNguoi']) agg[k] += s[k];
@@ -197,7 +225,7 @@ async function loadImg(url) { const im = new Image(); im.src = url; await im.dec
 export async function runReal(dir, cfg = {}) {
   const st = T().state; st.paused = true;
   await T().setModel(cfg.model || 'fast');
-  Object.assign(st, { refine: cfg.refine ?? true, sigmaC: cfg.sigmaC ?? 0.1, refStep: cfg.refStep ?? 1.6, temporal: cfg.temporal ?? 0.5, invert: false, roi: cfg.roi ?? false });
+  applyCfg(st, cfg);
   const lo = cfg.lo ?? 0.41, hi = cfg.hi ?? 0.71, frames = cfg.frames ?? 4;
   let index = await (await fetch(`${dir}/index.json`)).json();
   if (cfg.ids) index = index.filter((e) => cfg.ids.includes(e.id));
@@ -218,11 +246,7 @@ export async function runReal(dir, cfg = {}) {
       if (prev) { let ds = 0; for (let i = 0; i < a.data.length; i++) ds += Math.abs(sstep(lo, hi, a.data[i] / 255) - sstep(lo, hi, prev[i] / 255)); flick += ds / a.data.length; }
       prev = a.data;
     }
-    const g = mk(a.w, a.h), gx = g.getContext('2d', { willReadFrequently: true });
-    gx.imageSmoothingQuality = 'high'; gx.drawImage(al, 0, 0, a.w, a.h);
-    const gd = gx.getImageData(0, 0, a.w, a.h).data, gt = new Float32Array(a.w * a.h);
-    for (let i = 0; i < gt.length; i++) gt[i] = gd[i * 4] / 255;
-    const s = score(a.data, gt, a.w, a.h, lo, hi);
+    const s = score(upAlpha(a), gtFull(al, 0), FW, FH, lo, hi, 9);
     s.nhapNhay = 1000 * flick / (frames - 1);
     rows.push({ id: e.id, ...Object.fromEntries(Object.entries(s).map(([k, v]) => [k, +v.toFixed(2)])) });
     for (const k in agg) agg[k] += s[k];
