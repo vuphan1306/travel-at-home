@@ -4,7 +4,7 @@
 const MP_BASE = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14';
 const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite';
 
-const VERSION = 'v4', ZOOM_MIN = 0.6;
+const VERSION = 'v5', ZOOM_MIN = 0.6;
 const qs = new URLSearchParams(location.search);
 const DEMO = qs.has('demo');          // không dùng camera: nguồn hình và mặt nạ giả lập
 const $ = (id) => document.getElementById(id);
@@ -199,7 +199,7 @@ let frameSrc = video, demoCanvas = null, micStream = null;
 async function startCamera() {
   const stream = await navigator.mediaDevices.getUserMedia({
     // Xin ảnh 3:4 (trọn cảm biến) để có góc nhìn ngang rộng nhất; khung xuất ra vẫn là 9:16.
-    video: { facingMode: 'user', width: { ideal: 1080 }, height: { ideal: 1440 }, frameRate: { ideal: 30 } },
+    video: { facingMode: 'user', width: { ideal: CAM_MODES[0].w }, height: { ideal: CAM_MODES[0].h }, frameRate: { ideal: 30 } },
     audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
   });
   micStream = new MediaStream(stream.getAudioTracks());
@@ -212,10 +212,10 @@ async function startCamera() {
 }
 // Các kiểu xin hình từ camera, để so trên máy thật xem kiểu nào cho góc nhìn rộng nhất.
 const CAM_MODES = [
+  { name: '4:3 ngang 1440x1080', w: 1440, h: 1080 },   // mặc định: user chọn trên iPhone ngày 2026-11-11
   { name: '3:4 dọc 1080x1440', w: 1080, h: 1440 },
   { name: '9:16 dọc 720x1280', w: 720, h: 1280 },
   { name: '9:16 dọc 1080x1920', w: 1080, h: 1920 },
-  { name: '4:3 ngang 1440x1080', w: 1440, h: 1080 },
   { name: '16:9 ngang 1280x720', w: 1280, h: 720 },
   { name: '4:3 lớn nhất', w: 4032, h: 3024 },
 ];
