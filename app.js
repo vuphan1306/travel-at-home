@@ -4,6 +4,7 @@
 const MP_BASE = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14';
 const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite';
 
+const VERSION = 'v3', ZOOM_MIN = 0.6;
 const qs = new URLSearchParams(location.search);
 const DEMO = qs.has('demo');          // không dùng camera: nguồn hình và mặt nạ giả lập
 const $ = (id) => document.getElementById(id);
@@ -86,17 +87,21 @@ precision highp float;
 in vec2 vUv; in vec2 vP; out vec4 o;
 uniform sampler2D uVideo, uMask, uPano;
 uniform mat3 uRot; uniform vec2 uTan; uniform float uReveal, uAspect, uTintAmt, uInvert, uZoom;
-uniform vec3 uTint;
+uniform vec3 uTint; uniform vec2 uVidScale; uniform float uSoft;
 const float PI=3.14159265359;
 vec3 pano(vec3 d){
   float lon=atan(d.x,d.y), lat=asin(clamp(d.z,-1.,1.));
   return texture(uPano, vec2(lon/(2.*PI)+.5, .5-lat/PI)).rgb;
 }
 void main(){
-  vec2 zuv=(vUv-.5)/uZoom+.5;                            // zoom số: cắt vào giữa khung hình
-  vec3 cam=texture(uVideo,zuv).rgb;
+  // Vị trí trong ảnh camera. uVidScale cắt ảnh 3:4 cho vừa khung 9:16; zoom < 1 thì lộ phần ngoài ảnh.
+  vec2 zuv=(vUv-.5)*uVidScale/uZoom+.5;
+  float s=uSoft+1e-4;                                     // viền mờ dần khi ảnh camera không phủ kín khung
+  float inside=smoothstep(0.,s,zuv.x)*(1.-smoothstep(1.-s,1.,zuv.x))
+              *smoothstep(0.,s,zuv.y)*(1.-smoothstep(1.-4.*s,1.,zuv.y));
+  vec3 cam=texture(uVideo,zuv).rgb*inside;
   float m=texture(uMask,zuv).r; m=mix(m,1.-m,uInvert);
-  float a=smoothstep(.35,.7,m);
+  float a=smoothstep(.35,.7,m)*inside;
   // Ảnh thật của camera trước: bên phải ảnh là trục -X của máy.
   vec3 bg=pano(normalize(uRot*vec3(-vP.x*uTan.x, vP.y*uTan.y, 1.)));
   vec3 person=mix(cam, cam*uTint, uTintAmt);
@@ -129,7 +134,7 @@ function initGL() {
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
   const loc = gl.getAttribLocation(prog, 'aPos');
   gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-  for (const n of ['uVideo', 'uMask', 'uPano', 'uRot', 'uTan', 'uReveal', 'uAspect', 'uTintAmt', 'uInvert', 'uTint', 'uZoom'])
+  for (const n of ['uVideo', 'uMask', 'uPano', 'uRot', 'uTan', 'uReveal', 'uAspect', 'uTintAmt', 'uInvert', 'uTint', 'uZoom', 'uVidScale', 'uSoft'])
     U[n] = gl.getUniformLocation(prog, n);
   const tex = (unit, wrapS) => {
     const t = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, t);
@@ -193,14 +198,15 @@ const video = $('cam');
 let frameSrc = video, demoCanvas = null, micStream = null;
 async function startCamera() {
   const stream = await navigator.mediaDevices.getUserMedia({
-    video: { facingMode: 'user', width: { ideal: 720 }, height: { ideal: 1280 }, frameRate: { ideal: 30 } },
+    // Xin ảnh 3:4 (trọn cảm biến) để có góc nhìn ngang rộng nhất; khung xuất ra vẫn là 9:16.
+    video: { facingMode: 'user', width: { ideal: 1080 }, height: { ideal: 1440 }, frameRate: { ideal: 30 } },
     audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
   });
   micStream = new MediaStream(stream.getAudioTracks());
   video.srcObject = new MediaStream(stream.getVideoTracks());
   await video.play();
   if (!video.videoWidth) await new Promise((r) => video.addEventListener('loadedmetadata', r, { once: true }));
-  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+  canvas.width = 720; canvas.height = 1280;
 }
 function startDemoSource() {              // "căn phòng" giả có vật chuyển động, mặt nạ là hình người đơn giản
   demoCanvas = document.createElement('canvas'); demoCanvas.width = 540; demoCanvas.height = 960;
@@ -348,6 +354,9 @@ function tick(now) {
   // Zoom vào thì góc nhìn hẹp lại, nên nền 360° cũng phải phóng to đúng tỉ lệ đó.
   const aspect = canvas.width / canvas.height, tv = Math.tan(state.fovV * D2R / 2) / state.zoom;
   gl.uniform1f(U.uZoom, state.zoom);
+  const av = (frameSrc.videoWidth || frameSrc.width) / (frameSrc.videoHeight || frameSrc.height) || aspect;
+  if (av > aspect) gl.uniform2f(U.uVidScale, aspect / av, 1); else gl.uniform2f(U.uVidScale, 1, av / aspect);
+  gl.uniform1f(U.uSoft, state.zoom < 0.999 ? 0.03 : 0);
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.uniformMatrix3fv(U.uRot, true, m);
   gl.uniform2f(U.uTan, tv * aspect, tv);
@@ -359,7 +368,7 @@ function tick(now) {
   if (now - fpsT > 1000) {
     state.fps = frames * 1000 / (now - fpsT); frames = 0; fpsT = now;
     $('hud').textContent =
-      `${canvas.width}x${canvas.height}  ${state.fps.toFixed(0)} fps\n` +
+      `${VERSION}  ${canvas.width}x${canvas.height}  ${state.fps.toFixed(0)} fps  cam ${frameSrc.videoWidth || frameSrc.width}x${frameSrc.videoHeight || frameSrc.height}\n` +
       `tách người: ${state.segBackend} ${state.segMs.toFixed(1)} ms\n` +
       `xoay: ${state.orient}  zoom ${state.zoom.toFixed(1)}x${recorder ? '\n● đang quay' : ''}`;
   }
@@ -379,16 +388,19 @@ function bindUI() {
   bind('zoom', 'zoom', (v) => v.toFixed(1) + 'x', (v) => { state.zoom = v; });
   // Chụm hai ngón tay để zoom. Chặn luôn kiểu zoom cả trang của Safari.
   const setZoom = (z) => {
-    state.zoom = Math.max(1, Math.min(3, z));
+    state.zoom = Math.max(ZOOM_MIN, Math.min(3, z));
     $('zoom').value = state.zoom; $('zoomV').textContent = state.zoom.toFixed(1) + 'x';
   };
   const dist = (t) => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
   let pinch = null;
-  canvas.addEventListener('touchstart', (e) => { if (e.touches.length === 2) pinch = { d: dist(e.touches), z: state.zoom }; }, { passive: true });
-  canvas.addEventListener('touchmove', (e) => {
+  const onUI = (e) => e.target.closest && e.target.closest('#panel, #saved, button, input');
+  document.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 2 && !onUI(e)) pinch = { d: dist(e.touches), z: state.zoom };
+  }, { passive: true });
+  document.addEventListener('touchmove', (e) => {
     if (pinch && e.touches.length === 2) { e.preventDefault(); setZoom(pinch.z * dist(e.touches) / pinch.d); }
   }, { passive: false });
-  canvas.addEventListener('touchend', (e) => { if (e.touches.length < 2) pinch = null; });
+  document.addEventListener('touchend', (e) => { if (e.touches.length < 2) pinch = null; });
   document.addEventListener('gesturestart', (e) => e.preventDefault());
   $('settings').onclick = () => $('panel').classList.toggle('open');
   $('closePanel').onclick = () => $('panel').classList.remove('open');

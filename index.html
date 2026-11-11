@@ -10,7 +10,7 @@
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; height: 100%; background: #000; color: #fff; overflow: hidden;
     font: 15px/1.4 -apple-system, system-ui, "Segoe UI", sans-serif; touch-action: manipulation; }
-  #view { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #000; }
+  #view { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000; touch-action: none; }
   #view.mirror { transform: scaleX(-1); }
   .overlay { position: fixed; left: 0; right: 0; padding: 12px 14px; pointer-events: none; }
   .overlay > * { pointer-events: auto; }
@@ -65,7 +65,7 @@
     <button id="testPano">Dùng ảnh thử</button>
     <input id="panoFile" type="file" accept="image/*" hidden>
   </div>
-  <label>Zoom <span id="zoomV"></span><input id="zoom" type="range" min="1" max="3" step="0.1" value="1"></label>
+  <label>Zoom <span id="zoomV"></span><input id="zoom" type="range" min="0.6" max="3" step="0.05" value="1"></label>
   <label>Góc nhìn dọc của camera <span id="fovV"></span><input id="fov" type="range" min="45" max="100" step="1" value="70"></label>
   <label>Độ trễ cảm biến (ms) <span id="delayV"></span><input id="delay" type="range" min="0" max="200" step="5" value="60"></label>
   <label>Độ nhạy tiếng búng tay <span id="sensV"></span><input id="sens" type="range" min="1" max="10" step="1" value="5"></label>
@@ -94,6 +94,6 @@
   <div id="msg"></div>
 </div>
 
-<script type="module" src="./app.js"></script>
+<script type="module" src="./app.js?v=3"></script>
 </body>
 </html>
