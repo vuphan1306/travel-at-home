@@ -45,7 +45,7 @@ export async function prepare(url) {
   await T().setModel('fine');
   applyCfg(st, { roi: false, temporal: 1 });
   T().resetRef();
-  let a; for (let i = 0; i < 3; i++) a = T().evalFrame(photo);
+  let a; for (let i = 0; i < 3; i++) a = await T().evalFrame(photo);
   // phóng mặt nạ lên cỡ khung
   const small = mk(a.w, a.h), sx = small.getContext('2d'), id = sx.createImageData(a.w, a.h);
   for (let i = 0; i < a.data.length; i++) { id.data[i * 4] = id.data[i * 4 + 1] = id.data[i * 4 + 2] = a.data[i]; id.data[i * 4 + 3] = 255; }
@@ -146,13 +146,15 @@ function gtFull(src, channel) {            // channel 3: kênh trong suốt củ
   return out;
 }
 function applyCfg(st, cfg) {
+  LINEAR = !!cfg.linear; st.matteLinear = LINEAR;
   Object.assign(st, {
     refine: cfg.refine ?? true, refW: cfg.refW ?? 720, refStep0: cfg.refStep0 ?? 2.2, refStep: cfg.refStep ?? 1.0,
     sigmaC: cfg.sigmaC ?? 0.1, sigmaC2: cfg.sigmaC2 ?? 0.07, temporal: cfg.temporal ?? 0.5, invert: false,
-    roi: cfg.roi ?? true, blobMin: cfg.blobMin ?? 0.004, blobMax: cfg.blobMax ?? 0.14,
+    roi: cfg.roi ?? false, matteW: cfg.matteW ?? 384, blobMin: cfg.blobMin ?? 0.004, blobMax: cfg.blobMax ?? 0.14,
   });
 }
-const sstep = (lo, hi, v) => { const t = Math.min(1, Math.max(0, (v - lo) / (hi - lo))); return t * t * (3 - 2 * t); };
+let LINEAR = false;                       // model cho độ trong suốt thật thì dùng đường thẳng, không uốn cong
+const sstep = (lo, hi, v) => { const t = Math.min(1, Math.max(0, (v - lo) / (hi - lo))); return LINEAR ? t : t * t * (3 - 2 * t); };
 
 function score(alpha, gt, w, h, lo, hi, R = 6) {
   // vùng mép: mọi điểm cách đường biên đáp án không quá ~6 điểm
@@ -183,7 +185,7 @@ export async function run(cfg = {}) {
     let prev = null, flick = 0, last = null, lastGt = null;
     for (let f = 0; f < frames; f++) {
       const { frame, gt } = compose(bg, lay, f, motion, seed++);
-      const a = T().evalFrame(frame);
+      const a = await T().evalFrame(frame);
       if (!motion && prev) { let dsum = 0; for (let i = 0; i < a.data.length; i++) dsum += Math.abs(sstep(lo, hi, a.data[i] / 255) - sstep(lo, hi, prev[i] / 255)); flick += dsum / a.data.length; }
       prev = a.data; last = a; lastGt = gt;
     }
@@ -201,10 +203,10 @@ export async function run(cfg = {}) {
 }
 
 // Xem bằng mắt một bài thử: vẽ ảnh ghép và mặt nạ tính được cạnh nhau vào một canvas trên trang.
-export function show(bg, lay, cfg = {}) {
+export async function show(bg, lay, cfg = {}) {
   const st = T().state; st.paused = true; T().resetRef();
   let a, fr, gt;
-  for (let f = 0; f < 4; f++) { ({ frame: fr, gt } = compose(bg, lay, f, false, 100 + f)); a = T().evalFrame(fr); }
+  for (let f = 0; f < 4; f++) { ({ frame: fr, gt } = compose(bg, lay, f, false, 100 + f)); a = await T().evalFrame(fr); }
   const lo = cfg.lo ?? 0.41, hi = cfg.hi ?? 0.71, g = gtAt(gt, a.w, a.h);
   let c = document.getElementById('evalView');
   if (!c) { c = mk(a.w * 2, a.h); c.id = 'evalView'; c.style.cssText = 'position:fixed;inset:0;z-index:99;width:100%;height:100%;object-fit:contain;background:#222'; document.body.appendChild(c); }
@@ -242,7 +244,7 @@ export async function runReal(dir, cfg = {}) {
       const id = x.getImageData(0, 0, FW, FH), d = id.data, r = rng(seed++);
       for (let i = 0; i < d.length; i += 4) { const n = (r() - 0.5) * 10; d[i] += n; d[i + 1] += n; d[i + 2] += n; }
       x.putImageData(id, 0, 0);
-      a = T().evalFrame(c);
+      a = await T().evalFrame(c);
       if (prev) { let ds = 0; for (let i = 0; i < a.data.length; i++) ds += Math.abs(sstep(lo, hi, a.data[i] / 255) - sstep(lo, hi, prev[i] / 255)); flick += ds / a.data.length; }
       prev = a.data;
     }
@@ -260,7 +262,7 @@ export async function showReal(dir, id, cfg = {}) {
   const st = T().state; st.paused = true; T().resetRef();
   const [im, al] = await Promise.all([loadImg(`${dir}/${id}.jpg`), loadImg(`${dir}/${id}_a.png`)]);
   const c = mk(FW, FH); c.getContext('2d').drawImage(im, 0, 0, FW, FH);
-  let a; for (let f = 0; f < 4; f++) a = T().evalFrame(c);
+  let a; for (let f = 0; f < 4; f++) a = await T().evalFrame(c);
   const lo = cfg.lo ?? 0.41, hi = cfg.hi ?? 0.71;
   const g = mk(a.w, a.h), gx = g.getContext('2d', { willReadFrequently: true }); gx.drawImage(al, 0, 0, a.w, a.h);
   const gd = gx.getImageData(0, 0, a.w, a.h).data;
@@ -274,4 +276,25 @@ export async function showReal(dir, id, cfg = {}) {
   }
   x.putImageData(id2, a.w, 0);
   return 'ok';
+}
+
+// Hiệu chuẩn thước đo: lấy chính đáp án, thu nhỏ về bề rộng w rồi phóng lại, và chấm nó.
+// Đây là điểm cao nhất mà một mặt nạ đặt đúng vị trí tuyệt đối nhưng chỉ có độ phân giải w có thể đạt.
+export async function calib(dir, widths = [256, 384, 512], limit = 100) {
+  LINEAR = true;
+  let index = (await (await fetch(`${dir}/index.json`)).json()).slice(0, limit);
+  const out = {};
+  for (const w of widths) {
+    let sum = 0;
+    for (const e of index) {
+      const al = await loadImg(`${dir}/${e.id}_a.png`);
+      const h = Math.round(w * FH / FW), c = mk(w, h), cx = c.getContext('2d', { willReadFrequently: true });
+      cx.imageSmoothingQuality = 'high'; cx.drawImage(al, 0, 0, w, h);
+      const d = cx.getImageData(0, 0, w, h).data, a = { w, h, data: new Uint8Array(w * h) };
+      for (let i = 0; i < a.data.length; i++) a.data[i] = d[i * 4];
+      sum += score(upAlpha(a), gtFull(al, 0), FW, FH, 0, 1, 9).vien;
+    }
+    out[w] = +(sum / index.length).toFixed(2);
+  }
+  return out;
 }
