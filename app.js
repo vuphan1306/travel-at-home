@@ -8,7 +8,7 @@ const MODELS = {
   fine: `${MP_MODELS}/selfie_multiclass_256x256/float32/latest/selfie_multiclass_256x256.tflite`,  // 6 lớp, lớp 0 là nền
 };
 
-const VERSION = 'v8', ZOOM_MIN = 0.6, REF_W = 480;
+const VERSION = 'v9', ZOOM_MIN = 0.6, REF_W = 480;
 const qs = new URLSearchParams(location.search);
 const DEMO = qs.has('demo');          // không dùng camera: nguồn hình và mặt nạ giả lập
 const $ = (id) => document.getElementById(id);
@@ -257,21 +257,44 @@ function readAlpha() {                    // dùng cho bộ chấm điểm: đ�
 
 // ---------- Ảnh 360° ----------
 let panoTint = [1, 1, 1];
-function setPano(source) {                // ảnh hoặc canvas dạng equirectangular 2:1
-  const maxW = Math.min(4096, gl.getParameter(gl.MAX_TEXTURE_SIZE));
+// Các điểm đến có sẵn. lon = kinh độ của địa danh trong ảnh (độ, 0 là giữa ảnh, dương là về bên phải),
+// để khi búng tay địa danh hiện ngay sau lưng hai ba con. Giấy phép từng ảnh ghi ở assets/panos/CREDITS.md.
+const DESTS = [
+  { id: 'colosseum', name: 'Đấu trường La Mã', url: 'assets/panos/colosseum.jpg', lon: 132, credit: 'Greg Zaal, Rico Cilliers / Poly Haven (CC0)' },
+  { id: 'eiffel', name: 'Paris, tháp Eiffel', url: 'assets/panos/eiffel.jpg', lon: -96, credit: 'Alexandre Duret-Lutz (CC BY-SA 2.0)' },
+  { id: 'great-wall', name: 'Vạn Lý Trường Thành (trong vọng lâu)', url: 'assets/panos/great-wall.jpg', lon: 42, credit: 'Greg Zaal / Poly Haven (CC0)' },
+];
+function setPano(source, lonDeg = 0) {    // ảnh hoặc canvas dạng equirectangular 2:1
+  const maxTex = gl.getParameter(gl.MAX_TEXTURE_SIZE);
   const sw = source.naturalWidth || source.width, shh = source.naturalHeight || source.height;
-  const w = Math.min(maxW, sw), h = Math.round(w * shh / sw);
-  const c = document.createElement('canvas'); c.width = w; c.height = h;
-  const cx = c.getContext('2d', { willReadFrequently: true }); cx.drawImage(source, 0, 0, w, h);
   gl.activeTexture(gl.TEXTURE2);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, c);
+  if (sw <= Math.min(8192, maxTex)) {
+    // Đưa thẳng ảnh lên GPU. Không vẽ qua canvas vì Safari trên iPhone giới hạn canvas khoảng 16,7 triệu điểm.
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
+  } else {
+    const w = Math.min(4096, maxTex), h = Math.round(w * shh / sw);
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    c.getContext('2d').drawImage(source, 0, 0, w, h);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, c);
+  }
+  state.panoLon = lonDeg * D2R;
   // Màu trung bình của dải ngang giữa ảnh, dùng để nhuộm nhẹ người cho hợp nền.
-  const s = document.createElement('canvas'); s.width = 32; s.height = 16;
-  const sx = s.getContext('2d', { willReadFrequently: true }); sx.drawImage(c, 0, 0, 32, 16);
+  const t = document.createElement('canvas'); t.width = 32; t.height = 16;
+  const sx = t.getContext('2d', { willReadFrequently: true }); sx.drawImage(source, 0, 0, 32, 16);
   const d = sx.getImageData(0, 4, 32, 8).data; let r = 0, g = 0, b = 0;
   for (let i = 0; i < d.length; i += 4) { r += d[i]; g += d[i + 1]; b += d[i + 2]; }
   const lum = (r + g + b) / 3 || 1;
   panoTint = [r / lum, g / lum, b / lum].map((v) => Math.max(0.75, Math.min(1.25, v)));
+}
+async function loadDest(id) {
+  const dst = DESTS.find((x) => x.id === id);
+  const credit = $('credit');
+  if (!dst) { setPano(makeTestPano()); credit.textContent = ''; return; }
+  credit.textContent = 'Đang tải ảnh…';
+  try {
+    const img = new Image(); img.src = dst.url; await img.decode();
+    setPano(img, dst.lon); credit.textContent = 'Ảnh: ' + dst.credit;
+  } catch (e) { credit.textContent = 'Không tải được ảnh: ' + (e.message || e); }
 }
 function makeTestPano() {                 // ảnh thử có lưới và nhãn để kiểm tra hướng xoay
   const W = 2048, H = 1024, c = document.createElement('canvas'); c.width = W; c.height = H;
@@ -536,7 +559,7 @@ function tick(now) {
     refinePass();
     frames++;
   }
-  const m = mul(rotZ(state.heading0), orientAt(now - state.delayMs));
+  const m = mul(rotZ(state.heading0 - (state.panoLon || 0)), orientAt(now - state.delayMs));
   // Zoom vào thì góc nhìn hẹp lại, nên nền 360° cũng phải phóng to đúng tỉ lệ đó.
   const tv = Math.tan(state.fovV * D2R / 2) / state.zoom;
   gl.useProgram(prog);
@@ -612,11 +635,13 @@ function bindUI() {
     try { await initSegmenter(); } catch (err) { state.model = 'fast'; await initSegmenter(); }
     e.target.textContent = 'Model: ' + (state.model === 'fine' ? 'kỹ' : 'nhanh');
   };
-  $('testPano').onclick = () => setPano(makeTestPano());
+  $('testPano').onclick = () => { $('dest').value = ''; loadDest(''); };
+  for (const d of DESTS) { const o = document.createElement('option'); o.value = d.id; o.textContent = d.name; $('dest').appendChild(o); }
+  $('dest').onchange = (e) => loadDest(e.target.value);
   $('pickPano').onclick = () => $('panoFile').click();
   $('panoFile').onchange = (e) => {
     const f = e.target.files[0]; if (!f) return;
-    const img = new Image(); img.onload = () => { setPano(img); URL.revokeObjectURL(img.src); };
+    const img = new Image(); img.onload = () => { setPano(img); URL.revokeObjectURL(img.src); $('dest').value = ''; $('credit').textContent = 'Ảnh của bạn'; };
     img.src = URL.createObjectURL(f);
   };
 }
@@ -626,6 +651,7 @@ async function start() {
   try {
     msg.textContent = 'Đang xin quyền cảm biến…'; await startOrientation();   // phải gọi ngay trong lần chạm
     initGL(); setPano(makeTestPano());
+    $('dest').value = DESTS[0].id; loadDest(DESTS[0].id);     // tải nền thật trong lúc mở camera
     if (qs.get('src')) await startStillSource(qs.get('src'));
     else if (DEMO) startDemoSource();
     else { msg.textContent = 'Đang mở camera…'; await startCamera(); initAudio(); }
