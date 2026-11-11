@@ -8,9 +8,9 @@ const MODELS = {
   fine: `${MP_MODELS}/selfie_multiclass_256x256/float32/latest/selfie_multiclass_256x256.tflite`,  // 6 lớp, lớp 0 là nền
 };
 
-import { SnapDetector } from './snap.js?v=12';
+import { SnapDetector } from './snap.js?v=13';
 
-const VERSION = 'v12', ZOOM_MIN = 0.6;
+const VERSION = 'v13', ZOOM_MIN = 0.6;
 const qs = new URLSearchParams(location.search);
 const DEMO = qs.has('demo');          // không dùng camera: nguồn hình và mặt nạ giả lập
 const $ = (id) => document.getElementById(id);
@@ -315,6 +315,18 @@ const DESTS = [
   { id: 'colosseum', name: 'Đấu trường La Mã', url: 'assets/panos/colosseum.jpg', lon: 132, credit: 'Greg Zaal, Rico Cilliers / Poly Haven (CC0)' },
   { id: 'eiffel', name: 'Paris, tháp Eiffel', url: 'assets/panos/eiffel.jpg', lon: -96, credit: 'Alexandre Duret-Lutz (CC BY-SA 2.0)' },
   { id: 'great-wall', name: 'Vạn Lý Trường Thành (trong vọng lâu)', url: 'assets/panos/great-wall.jpg', lon: 42, credit: 'Greg Zaal / Poly Haven (CC0)' },
+  { id: 'venice', name: 'Venice, quảng trường San Marco', url: 'assets/panos/venice.jpg', lon: 15, credit: 'Greg Zaal, Rico Cilliers / Poly Haven (CC0)' },
+  { id: 'vatican', name: 'Vatican, quảng trường Thánh Phêrô (đêm)', url: 'assets/panos/vatican.jpg', lon: -75, credit: 'Andreas Mischok / Poly Haven (CC0)' },
+  { id: 'london', name: 'London, Big Ben và sông Thames', url: 'assets/panos/london.jpg', lon: 70, credit: 'Domob (CC BY-SA 4.0)' },
+  { id: 'louvre', name: 'Paris, bảo tàng Louvre', url: 'assets/panos/louvre.jpg', lon: 85, credit: 'Daniel Kraft (CC BY-SA 3.0)' },
+  { id: 'notre-dame', name: 'Paris, nhà thờ Đức Bà (đêm)', url: 'assets/panos/notre-dame.jpg', lon: -15, credit: 'gadl (Alexandre Duret-Lutz) (CC BY-SA 2.0)' },
+  { id: 'acropolis', name: 'Athens, đền Parthenon', url: 'assets/panos/acropolis.jpg', lon: 140, credit: 'Fuzheado (CC BY-SA 4.0)' },
+  { id: 'santorini', name: 'Santorini (nhìn từ trên cao)', url: 'assets/panos/santorini.jpg', lon: -70, credit: 'Anna Tsolidou (CC BY-SA 4.0)' },
+  { id: 'schonbrunn', name: 'Vienna, cung điện Schönbrunn', url: 'assets/panos/schonbrunn.jpg', lon: -3, credit: 'Joachim Köhler (CC BY-SA 4.0)' },
+  { id: 'shanghai', name: 'Thượng Hải, Bến Thượng Hải (đêm)', url: 'assets/panos/shanghai.jpg', lon: 45, credit: 'Greg Zaal / Poly Haven (CC0)' },
+  { id: 'niagara', name: 'Thác Niagara', url: 'assets/panos/niagara.jpg', lon: -20, credit: 'G. Edward Johnson (CC BY 4.0)' },
+  { id: 'grand-canyon', name: 'Grand Canyon', url: 'assets/panos/grand-canyon.jpg', lon: 60, credit: 'Grand Canyon NPS (CC BY 2.0)' },
+  { id: 'table-mountain', name: 'Cape Town, núi Bàn', url: 'assets/panos/table-mountain.jpg', lon: 70, credit: 'Greg Zaal, Rico Cilliers / Poly Haven (CC0)' },
 ];
 function setPano(source, lonDeg = 0) {    // ảnh hoặc canvas dạng equirectangular 2:1
   const maxTex = gl.getParameter(gl.MAX_TEXTURE_SIZE);

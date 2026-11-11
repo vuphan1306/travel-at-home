@@ -9,11 +9,23 @@ struct Destination {
 }
 
 final class CameraViewController: UIViewController {
-    private let appVersion = "ios-2"
+    private let appVersion = "ios-3"
     private let destinations = [
         Destination(name: "La Mã", file: "colosseum", lonDeg: 132),
         Destination(name: "Paris", file: "eiffel", lonDeg: -96),
         Destination(name: "Vạn Lý Trường Thành", file: "great-wall", lonDeg: 42),
+        Destination(name: "Venice", file: "venice", lonDeg: 15),
+        Destination(name: "Vatican (đêm)", file: "vatican", lonDeg: -75),
+        Destination(name: "London", file: "london", lonDeg: 70),
+        Destination(name: "Louvre", file: "louvre", lonDeg: 85),
+        Destination(name: "Nhà thờ Đức Bà", file: "notre-dame", lonDeg: -15),
+        Destination(name: "Athens", file: "acropolis", lonDeg: 140),
+        Destination(name: "Santorini", file: "santorini", lonDeg: -70),
+        Destination(name: "Vienna", file: "schonbrunn", lonDeg: -3),
+        Destination(name: "Thượng Hải (đêm)", file: "shanghai", lonDeg: 45),
+        Destination(name: "Thác Niagara", file: "niagara", lonDeg: -20),
+        Destination(name: "Grand Canyon", file: "grand-canyon", lonDeg: 60),
+        Destination(name: "Núi Bàn", file: "table-mountain", lonDeg: 70),
     ]
     private var destinationIndex = 0
 
@@ -132,6 +144,12 @@ final class CameraViewController: UIViewController {
         style(snapButton, title: "Búng 🫰", action: #selector(tapSnap))
         style(centerButton, title: "Canh giữa", action: #selector(tapCenter))
         style(destinationButton, title: destinations[0].name, action: #selector(tapDestination))
+        // Nhiều điểm đến: bấm nút thì mở danh sách để chọn thay vì phải bấm lần lượt.
+        destinationButton.menu = UIMenu(title: "Điểm đến", children: destinations.enumerated().map { index, d in
+            UIAction(title: d.name) { [weak self] _ in self?.loadDestination(index) }
+        })
+        destinationButton.showsMenuAsPrimaryAction = true
+        destinationButton.titleLabel?.adjustsFontSizeToFitWidth = true
         style(qualityButton, title: "Tách: \(segmenter.quality.title)", action: #selector(tapQuality))
         style(maskButton, title: "Mặt nạ", action: #selector(tapMask))
         style(flipButton, title: "Đảo xoay", action: #selector(tapFlip))
