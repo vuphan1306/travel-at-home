@@ -4,7 +4,7 @@
 const MP_BASE = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14';
 const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite';
 
-const VERSION = 'v3', ZOOM_MIN = 0.6;
+const VERSION = 'v4', ZOOM_MIN = 0.6;
 const qs = new URLSearchParams(location.search);
 const DEMO = qs.has('demo');          // không dùng camera: nguồn hình và mặt nạ giả lập
 const $ = (id) => document.getElementById(id);
@@ -203,10 +203,39 @@ async function startCamera() {
     audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
   });
   micStream = new MediaStream(stream.getAudioTracks());
-  video.srcObject = new MediaStream(stream.getVideoTracks());
+  camTrack = stream.getVideoTracks()[0];
+  video.srcObject = new MediaStream([camTrack]);
   await video.play();
   if (!video.videoWidth) await new Promise((r) => video.addEventListener('loadedmetadata', r, { once: true }));
   canvas.width = 720; canvas.height = 1280;
+  describeCamera();
+}
+// Các kiểu xin hình từ camera, để so trên máy thật xem kiểu nào cho góc nhìn rộng nhất.
+const CAM_MODES = [
+  { name: '3:4 dọc 1080x1440', w: 1080, h: 1440 },
+  { name: '9:16 dọc 720x1280', w: 720, h: 1280 },
+  { name: '9:16 dọc 1080x1920', w: 1080, h: 1920 },
+  { name: '4:3 ngang 1440x1080', w: 1440, h: 1080 },
+  { name: '16:9 ngang 1280x720', w: 1280, h: 720 },
+  { name: '4:3 lớn nhất', w: 4032, h: 3024 },
+];
+let camTrack = null, camMode = 0;
+function describeCamera() {
+  if (!camTrack) return;
+  const s = camTrack.getSettings ? camTrack.getSettings() : {};
+  const c = camTrack.getCapabilities ? camTrack.getCapabilities() : {};
+  const z = c.zoom ? `${c.zoom.min}–${c.zoom.max} (đang ${s.zoom ?? '?'})` : 'không có';
+  const max = c.width && c.height ? `${c.width.max}x${c.height.max}` : '?';
+  state.camInfo = `chế độ: ${CAM_MODES[camMode].name}\nmáy cấp: ${s.width}x${s.height} @${Math.round(s.frameRate || 0)}  tối đa ${max}\nzoom ống kính: ${z}`;
+}
+async function nextCamMode() {
+  if (!camTrack) return;
+  camMode = (camMode + 1) % CAM_MODES.length;
+  const m = CAM_MODES[camMode];
+  try { await camTrack.applyConstraints({ width: { ideal: m.w }, height: { ideal: m.h }, frameRate: { ideal: 30 } }); }
+  catch (e) { state.camInfo = 'lỗi đổi chế độ: ' + e.message; return; }
+  await new Promise((r) => setTimeout(r, 400));
+  describeCamera();
 }
 function startDemoSource() {              // "căn phòng" giả có vật chuyển động, mặt nạ là hình người đơn giản
   demoCanvas = document.createElement('canvas'); demoCanvas.width = 540; demoCanvas.height = 960;
@@ -370,7 +399,7 @@ function tick(now) {
     $('hud').textContent =
       `${VERSION}  ${canvas.width}x${canvas.height}  ${state.fps.toFixed(0)} fps  cam ${frameSrc.videoWidth || frameSrc.width}x${frameSrc.videoHeight || frameSrc.height}\n` +
       `tách người: ${state.segBackend} ${state.segMs.toFixed(1)} ms\n` +
-      `xoay: ${state.orient}  zoom ${state.zoom.toFixed(1)}x${recorder ? '\n● đang quay' : ''}`;
+      `xoay: ${state.orient}  zoom ${state.zoom.toFixed(1)}x${state.camInfo ? '\n' + state.camInfo : ''}${recorder ? '\n● đang quay' : ''}`;
   }
 }
 
@@ -412,6 +441,7 @@ function bindUI() {
   $('mirror').onclick = (e) => { state.mirror = !state.mirror; canvas.classList.toggle('mirror', state.mirror); e.target.textContent = 'Soi gương: ' + (state.mirror ? 'bật' : 'tắt'); };
   $('invert').onclick = (e) => { state.invert = !state.invert; e.target.textContent = 'Đảo mặt nạ: ' + (state.invert ? 'bật' : 'tắt'); };
   $('listen').onclick = (e) => { state.listen = !state.listen; e.target.textContent = 'Nghe búng tay: ' + (state.listen ? 'bật' : 'tắt'); };
+  $('camMode').onclick = nextCamMode;
   $('testPano').onclick = () => setPano(makeTestPano());
   $('pickPano').onclick = () => $('panoFile').click();
   $('panoFile').onchange = (e) => {
