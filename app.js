@@ -9,7 +9,7 @@ const DEMO = qs.has('demo');          // không dùng camera: nguồn hình và 
 const $ = (id) => document.getElementById(id);
 
 const state = {
-  fovV: 70, delayMs: 60, sens: 5, tintAmt: 0.3,
+  fovV: 70, delayMs: 60, sens: 5, tintAmt: 0.3, zoom: 1,
   invert: false, listen: true, mirror: true,
   reveal: 0, revealTarget: 0,          // 0 = ở nhà, 1 = ở điểm đến
   heading0: 0,                          // hướng la bàn được canh làm tâm ảnh 360°
@@ -85,7 +85,7 @@ const FS = `#version 300 es
 precision highp float;
 in vec2 vUv; in vec2 vP; out vec4 o;
 uniform sampler2D uVideo, uMask, uPano;
-uniform mat3 uRot; uniform vec2 uTan; uniform float uReveal, uAspect, uTintAmt, uInvert;
+uniform mat3 uRot; uniform vec2 uTan; uniform float uReveal, uAspect, uTintAmt, uInvert, uZoom;
 uniform vec3 uTint;
 const float PI=3.14159265359;
 vec3 pano(vec3 d){
@@ -93,8 +93,9 @@ vec3 pano(vec3 d){
   return texture(uPano, vec2(lon/(2.*PI)+.5, .5-lat/PI)).rgb;
 }
 void main(){
-  vec3 cam=texture(uVideo,vUv).rgb;
-  float m=texture(uMask,vUv).r; m=mix(m,1.-m,uInvert);
+  vec2 zuv=(vUv-.5)/uZoom+.5;                            // zoom số: cắt vào giữa khung hình
+  vec3 cam=texture(uVideo,zuv).rgb;
+  float m=texture(uMask,zuv).r; m=mix(m,1.-m,uInvert);
   float a=smoothstep(.35,.7,m);
   // Ảnh thật của camera trước: bên phải ảnh là trục -X của máy.
   vec3 bg=pano(normalize(uRot*vec3(-vP.x*uTan.x, vP.y*uTan.y, 1.)));
@@ -128,7 +129,7 @@ function initGL() {
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
   const loc = gl.getAttribLocation(prog, 'aPos');
   gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-  for (const n of ['uVideo', 'uMask', 'uPano', 'uRot', 'uTan', 'uReveal', 'uAspect', 'uTintAmt', 'uInvert', 'uTint'])
+  for (const n of ['uVideo', 'uMask', 'uPano', 'uRot', 'uTan', 'uReveal', 'uAspect', 'uTintAmt', 'uInvert', 'uTint', 'uZoom'])
     U[n] = gl.getUniformLocation(prog, n);
   const tex = (unit, wrapS) => {
     const t = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, t);
@@ -344,7 +345,9 @@ function tick(now) {
     frames++;
   }
   const m = mul(rotZ(state.heading0), orientAt(now - state.delayMs));
-  const aspect = canvas.width / canvas.height, tv = Math.tan(state.fovV * D2R / 2);
+  // Zoom vào thì góc nhìn hẹp lại, nên nền 360° cũng phải phóng to đúng tỉ lệ đó.
+  const aspect = canvas.width / canvas.height, tv = Math.tan(state.fovV * D2R / 2) / state.zoom;
+  gl.uniform1f(U.uZoom, state.zoom);
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.uniformMatrix3fv(U.uRot, true, m);
   gl.uniform2f(U.uTan, tv * aspect, tv);
@@ -358,7 +361,7 @@ function tick(now) {
     $('hud').textContent =
       `${canvas.width}x${canvas.height}  ${state.fps.toFixed(0)} fps\n` +
       `tách người: ${state.segBackend} ${state.segMs.toFixed(1)} ms\n` +
-      `xoay: ${state.orient}${recorder ? '\n● đang quay' : ''}`;
+      `xoay: ${state.orient}  zoom ${state.zoom.toFixed(1)}x${recorder ? '\n● đang quay' : ''}`;
   }
 }
 
@@ -373,6 +376,20 @@ function bindUI() {
   bind('delay', 'delayMs', (v) => v + ' ms', (v) => { state.delayMs = v; });
   bind('sens', 'sens', (v) => v, (v) => { state.sens = v; });
   bind('tint', 'tintAmt', (v) => v + '%', (v) => { state.tintAmt = v / 100; });
+  bind('zoom', 'zoom', (v) => v.toFixed(1) + 'x', (v) => { state.zoom = v; });
+  // Chụm hai ngón tay để zoom. Chặn luôn kiểu zoom cả trang của Safari.
+  const setZoom = (z) => {
+    state.zoom = Math.max(1, Math.min(3, z));
+    $('zoom').value = state.zoom; $('zoomV').textContent = state.zoom.toFixed(1) + 'x';
+  };
+  const dist = (t) => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+  let pinch = null;
+  canvas.addEventListener('touchstart', (e) => { if (e.touches.length === 2) pinch = { d: dist(e.touches), z: state.zoom }; }, { passive: true });
+  canvas.addEventListener('touchmove', (e) => {
+    if (pinch && e.touches.length === 2) { e.preventDefault(); setZoom(pinch.z * dist(e.touches) / pinch.d); }
+  }, { passive: false });
+  canvas.addEventListener('touchend', (e) => { if (e.touches.length < 2) pinch = null; });
+  document.addEventListener('gesturestart', (e) => e.preventDefault());
   $('settings').onclick = () => $('panel').classList.toggle('open');
   $('closePanel').onclick = () => $('panel').classList.remove('open');
   $('snap').onclick = onSnap;
