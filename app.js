@@ -2,9 +2,13 @@
 // Chuỗi xử lý mỗi khung hình: camera -> mặt nạ người (MediaPipe) -> ghép lên ảnh 360° xoay theo cảm biến.
 
 const MP_BASE = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14';
-const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite';
+const MP_MODELS = 'https://storage.googleapis.com/mediapipe-models/image_segmenter';
+const MODELS = {
+  fast: `${MP_MODELS}/selfie_segmenter/float16/latest/selfie_segmenter.tflite`,            // 1 lớp: người
+  fine: `${MP_MODELS}/selfie_multiclass_256x256/float32/latest/selfie_multiclass_256x256.tflite`,  // 6 lớp, lớp 0 là nền
+};
 
-const VERSION = 'v5', ZOOM_MIN = 0.6;
+const VERSION = 'v7', ZOOM_MIN = 0.6, REF_W = 480;
 const qs = new URLSearchParams(location.search);
 const DEMO = qs.has('demo');          // không dùng camera: nguồn hình và mặt nạ giả lập
 const $ = (id) => document.getElementById(id);
@@ -12,6 +16,10 @@ const $ = (id) => document.getElementById(id);
 const state = {
   fovV: 70, delayMs: 60, sens: 5, tintAmt: 0.3, zoom: 1,
   invert: false, listen: true, mirror: true,
+  // Tinh chỉnh mặt nạ: refStep = khoảng cách giữa các điểm lấy mẫu (tính theo điểm của mặt nạ tinh chỉnh),
+  // sigmaC = mức khác màu được coi là "cùng một vật", temporal = phần tin vào khung mới ở chỗ đứng yên.
+  refine: true, refStep: 1.6, sigmaC: 0.10, temporal: 0.5, lo: 0.41, hi: 0.71, despill: 2.5, debug: false,
+  model: 'fine', roi: true,
   reveal: 0, revealTarget: 0,          // 0 = ở nhà, 1 = ở điểm đến
   heading0: 0,                          // hướng la bàn được canh làm tâm ảnh 360°
   fps: 0, segMs: 0, segBackend: '-', orient: DEMO ? 'chuột' : 'chưa có',
@@ -79,15 +87,55 @@ function startMouseOrientation() {
 }
 
 // ---------- WebGL ----------
+// Hai bước vẽ:
+//  1) "tinh chỉnh": mặt nạ thô 256x256 -> mặt nạ bám theo đường nét của hình thật, ổn định theo thời gian.
+//  2) "ghép": người + nền 360° + hiệu ứng chuyển cảnh.
 const VS = `#version 300 es
 in vec2 aPos; out vec2 vUv; out vec2 vP;
 void main(){ vP=aPos; vUv=vec2(aPos.x*.5+.5, .5-aPos.y*.5); gl_Position=vec4(aPos,0.,1.); }`;
+
+// Bước 1. Toạ độ khung đích trùng toạ độ ảnh camera (gốc ở góc trên trái), nên bước 2 lấy mẫu thẳng theo zuv.
+const FS_REFINE = `#version 300 es
+precision highp float;
+out vec4 o;
+uniform sampler2D uVideo, uMask, uPrev;
+uniform vec2 uRes, uStep;
+uniform float uSigmaC, uInvert, uTemporal, uRefine;
+uniform vec4 uRoi;                      // vùng khoanh quanh người: x, y, rộng, cao (theo toạ độ ảnh camera)
+float M(vec2 q){
+  vec2 r=(q-uRoi.xy)/uRoi.zw;
+  float m=texture(uMask,r).r; m=mix(m,1.-m,uInvert);
+  return m*step(0.,r.x)*step(r.x,1.)*step(0.,r.y)*step(r.y,1.);
+}
+void main(){
+  vec2 uv=gl_FragCoord.xy/uRes;
+  vec3 c0=texture(uVideo,uv).rgb;
+  float m0=M(uv);
+  // Lọc song phương có dẫn hướng: điểm lân cận nào giống màu điểm đang xét thì được tin nhiều hơn.
+  // Nhờ đó mép mặt nạ trượt về đúng đường biên màu của tóc, vai, tay trong hình thật.
+  float acc=0., ws=0.;
+  for(int j=-2;j<=2;j++) for(int i=-2;i<=2;i++){
+    vec2 q=uv+vec2(float(i),float(j))*uStep;
+    vec3 d=texture(uVideo,q).rgb-c0;
+    float w=exp(-float(i*i+j*j)/4.5)*exp(-dot(d,d)/(2.*uSigmaC*uSigmaC));
+    acc+=w*M(q); ws+=w;
+  }
+  float a=mix(m0, acc/ws, uRefine);
+  // Chống nhấp nháy: chỗ hình đứng yên thì trộn với khung trước, chỗ đang chuyển động thì theo khung mới.
+  vec4 prev=texture(uPrev,uv);
+  float lum=dot(c0,vec3(.299,.587,.114));
+  float k=mix(uTemporal,1.,smoothstep(.02,.08,abs(lum-prev.g)));
+  k=max(k,smoothstep(.25,.55,abs(a-prev.r)));
+  o=vec4(mix(prev.r,a,k), lum, 0., 1.);
+}`;
+
 const FS = `#version 300 es
 precision highp float;
 in vec2 vUv; in vec2 vP; out vec4 o;
-uniform sampler2D uVideo, uMask, uPano;
-uniform mat3 uRot; uniform vec2 uTan; uniform float uReveal, uAspect, uTintAmt, uInvert, uZoom;
+uniform sampler2D uVideo, uRef, uPano;
+uniform mat3 uRot; uniform vec2 uTan; uniform float uReveal, uAspect, uTintAmt, uZoom;
 uniform vec3 uTint; uniform vec2 uVidScale; uniform float uSoft;
+uniform vec2 uRefTexel; uniform float uLo, uHi, uDespill, uDebug;
 const float PI=3.14159265359;
 vec3 pano(vec3 d){
   float lon=atan(d.x,d.y), lat=asin(clamp(d.z,-1.,1.));
@@ -99,24 +147,33 @@ void main(){
   float s=uSoft+1e-4;                                     // viền mờ dần khi ảnh camera không phủ kín khung
   float inside=smoothstep(0.,s,zuv.x)*(1.-smoothstep(1.-s,1.,zuv.x))
               *smoothstep(0.,s,zuv.y)*(1.-smoothstep(1.-4.*s,1.,zuv.y));
-  vec3 cam=texture(uVideo,zuv).rgb*inside;
-  float m=texture(uMask,zuv).r; m=mix(m,1.-m,uInvert);
-  float a=smoothstep(.35,.7,m)*inside;
+  vec3 raw=texture(uVideo,zuv).rgb;
+  vec3 cam=raw*inside;
+  float a=smoothstep(uLo,uHi,texture(uRef,zuv).r)*inside;
+  // Khử viền màu phòng: điểm nằm trên mép lấy màu từ phía trong thân người thay vì màu lẫn với tường.
+  vec2 g=vec2(texture(uRef,zuv+vec2(uRefTexel.x,0.)).r-texture(uRef,zuv-vec2(uRefTexel.x,0.)).r,
+              texture(uRef,zuv+vec2(0.,uRefTexel.y)).r-texture(uRef,zuv-vec2(0.,uRefTexel.y)).r);
+  float gn=length(g);
+  vec3 fg=raw;
+  if(gn>.02 && a<.999){ fg=mix(texture(uVideo, zuv+g/gn*uRefTexel*uDespill).rgb, raw, a); }
   // Ảnh thật của camera trước: bên phải ảnh là trục -X của máy.
   vec3 bg=pano(normalize(uRot*vec3(-vP.x*uTan.x, vP.y*uTan.y, 1.)));
-  vec3 person=mix(cam, cam*uTint, uTintAmt);
-  person=mix(person, bg, a*(1.-a)*1.0);                 // làm mềm viền bằng màu nền
+  vec3 person=mix(fg, fg*uTint, uTintAmt);
+  person=mix(person, bg, a*(1.-a)*.5);                  // làm mềm viền bằng màu nền
   vec3 comp=mix(bg, person, a);
   float r=length(vec2(vP.x*uAspect, vP.y));
   float edge=uReveal*(length(vec2(uAspect,1.))+.35);
   float k=1.-smoothstep(edge-.25, edge, r);
   float glow=(1.-smoothstep(0.,.14,abs(r-edge)))*step(.001,uReveal)*(1.-step(.999,uReveal));
-  o=vec4(mix(cam,comp,k)+glow*vec3(1.,.93,.75)*.9, 1.);
+  vec3 col=mix(cam,comp,k)+glow*vec3(1.,.93,.75)*.9;
+  if(uDebug>.5) col=mix(vec3(1.,0.,1.), fg, a);          // xem mặt nạ: nền tím, không pha gì thêm
+  o=vec4(col, 1.);
 }`;
 
 const canvas = $('view');
 const gl = canvas.getContext('webgl2', { alpha: false, antialias: false, powerPreference: 'high-performance' });
-let prog, U = {}, texVideo, texMask, texPano;
+let prog, progRefine, U = {}, UR = {}, texVideo, texMask, texPano;
+const ref = { w: 0, h: 0, tex: [null, null], fbo: [null, null], cur: 0 };
 
 function initGL() {
   if (!gl) throw new Error('Trình duyệt không hỗ trợ WebGL2');
@@ -125,30 +182,77 @@ function initGL() {
     if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
     return s;
   };
-  prog = gl.createProgram();
-  gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS));
-  gl.linkProgram(prog);
-  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
-  gl.useProgram(prog);
+  const build = (fs, names) => {
+    const pr = gl.createProgram();
+    gl.attachShader(pr, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, fs));
+    gl.bindAttribLocation(pr, 0, 'aPos');
+    gl.linkProgram(pr);
+    if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(pr));
+    const u = {}; for (const n of names) u[n] = gl.getUniformLocation(pr, n);
+    return [pr, u];
+  };
+  [prog, U] = build(FS, ['uVideo', 'uRef', 'uPano', 'uRot', 'uTan', 'uReveal', 'uAspect', 'uTintAmt', 'uTint', 'uZoom',
+    'uVidScale', 'uSoft', 'uRefTexel', 'uLo', 'uHi', 'uDespill', 'uDebug']);
+  [progRefine, UR] = build(FS_REFINE, ['uVideo', 'uMask', 'uPrev', 'uRes', 'uStep', 'uSigmaC', 'uInvert', 'uTemporal', 'uRefine', 'uRoi']);
   const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
-  const loc = gl.getAttribLocation(prog, 'aPos');
-  gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-  for (const n of ['uVideo', 'uMask', 'uPano', 'uRot', 'uTan', 'uReveal', 'uAspect', 'uTintAmt', 'uInvert', 'uTint', 'uZoom', 'uVidScale', 'uSoft'])
-    U[n] = gl.getUniformLocation(prog, n);
-  const tex = (unit, wrapS) => {
-    const t = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, t);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrapS);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    return t;
-  };
-  texVideo = tex(0, gl.CLAMP_TO_EDGE); texMask = tex(1, gl.CLAMP_TO_EDGE); texPano = tex(2, gl.REPEAT);
-  gl.uniform1i(U.uVideo, 0); gl.uniform1i(U.uMask, 1); gl.uniform1i(U.uPano, 2);
+  gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+  texVideo = makeTex(0, gl.CLAMP_TO_EDGE); texMask = makeTex(1, gl.CLAMP_TO_EDGE); texPano = makeTex(2, gl.REPEAT);
+  // Đơn vị texture: 0 hình camera, 1 mặt nạ thô, 2 ảnh 360°, 3 mặt nạ đã tinh chỉnh, 4 mặt nạ khung trước.
+  gl.useProgram(prog); gl.uniform1i(U.uVideo, 0); gl.uniform1i(U.uRef, 3); gl.uniform1i(U.uPano, 2);
+  gl.useProgram(progRefine); gl.uniform1i(UR.uVideo, 0); gl.uniform1i(UR.uMask, 1); gl.uniform1i(UR.uPrev, 4);
   gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
   gl.activeTexture(gl.TEXTURE1);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, 1, 1, 0, gl.RED, gl.UNSIGNED_BYTE, new Uint8Array([0]));
+}
+function makeTex(unit, wrapS) {
+  const t = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, t);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrapS);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  return t;
+}
+function ensureRef(av) {                  // mặt nạ tinh chỉnh có cùng tỉ lệ với ảnh camera
+  const w = REF_W, h = Math.max(16, Math.round(REF_W / av));
+  if (ref.w === w && ref.h === h) return;
+  for (let i = 0; i < 2; i++) {
+    if (ref.tex[i]) { gl.deleteTexture(ref.tex[i]); gl.deleteFramebuffer(ref.fbo[i]); }
+    ref.tex[i] = makeTex(5, gl.CLAMP_TO_EDGE);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    ref.fbo[i] = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, ref.fbo[i]);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, ref.tex[i], 0);
+    gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT);
+  }
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  ref.w = w; ref.h = h; ref.cur = 0;
+}
+function refinePass() {
+  const nxt = 1 - ref.cur;
+  gl.useProgram(progRefine);
+  gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D, ref.tex[ref.cur]);
+  gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, null);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, ref.fbo[nxt]);
+  gl.viewport(0, 0, ref.w, ref.h);
+  gl.uniform2f(UR.uRes, ref.w, ref.h);
+  gl.uniform2f(UR.uStep, state.refStep / ref.w, state.refStep / ref.h);
+  gl.uniform1f(UR.uSigmaC, state.sigmaC);
+  gl.uniform1f(UR.uInvert, state.invert ? 1 : 0);
+  gl.uniform1f(UR.uTemporal, state.temporal);
+  gl.uniform1f(UR.uRefine, state.refine ? 1 : 0);
+  gl.uniform4f(UR.uRoi, maskRoi.x, maskRoi.y, maskRoi.w, maskRoi.h);
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  ref.cur = nxt;
+}
+function readAlpha() {                    // dùng cho bộ chấm điểm: đọc mặt nạ đã tinh chỉnh
+  const px = new Uint8Array(ref.w * ref.h * 4);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, ref.fbo[ref.cur]);
+  gl.readPixels(0, 0, ref.w, ref.h, gl.RGBA, gl.UNSIGNED_BYTE, px);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  const out = new Uint8Array(ref.w * ref.h);
+  for (let i = 0; i < out.length; i++) out[i] = px[i * 4];
+  return { w: ref.w, h: ref.h, data: out };
 }
 
 // ---------- Ảnh 360° ----------
@@ -237,6 +341,14 @@ async function nextCamMode() {
   await new Promise((r) => setTimeout(r, 400));
   describeCamera();
 }
+let stillCanvas = null;
+async function startStillSource(url) {     // ?src=ảnh&crop=x,y,w,h : dùng một ảnh thật thay cho camera
+  const img = new Image(); img.src = url; await img.decode();
+  const c = (qs.get('crop') || `0,0,${img.naturalWidth},${img.naturalHeight}`).split(',').map(Number);
+  stillCanvas = document.createElement('canvas'); stillCanvas.width = c[2]; stillCanvas.height = c[3];
+  stillCanvas.getContext('2d').drawImage(img, c[0], c[1], c[2], c[3], 0, 0, c[2], c[3]);
+  frameSrc = stillCanvas; canvas.width = 720; canvas.height = 1280;
+}
 function startDemoSource() {              // "căn phòng" giả có vật chuyển động, mặt nạ là hình người đơn giản
   demoCanvas = document.createElement('canvas'); demoCanvas.width = 540; demoCanvas.height = 960;
   frameSrc = demoCanvas; canvas.width = 540; canvas.height = 960;
@@ -261,28 +373,67 @@ function drawDemo(t) {
 
 // ---------- Tách người ----------
 let segmenter = null, maskU8 = null;
+let mpVision = null;
 async function initSegmenter() {
-  const { ImageSegmenter, FilesetResolver } = await import(`${MP_BASE}/vision_bundle.mjs`);
-  const fileset = await FilesetResolver.forVisionTasks(`${MP_BASE}/wasm`);
-  const make = (delegate) => ImageSegmenter.createFromOptions(fileset, {
-    baseOptions: { modelAssetPath: MODEL_URL, delegate },
+  if (!mpVision) {
+    const mp = await import(`${MP_BASE}/vision_bundle.mjs`);
+    mpVision = { ImageSegmenter: mp.ImageSegmenter, fileset: await mp.FilesetResolver.forVisionTasks(`${MP_BASE}/wasm`) };
+  }
+  const make = (delegate) => mpVision.ImageSegmenter.createFromOptions(mpVision.fileset, {
+    baseOptions: { modelAssetPath: MODELS[state.model], delegate },
     runningMode: 'VIDEO', outputCategoryMask: false, outputConfidenceMasks: true,
   });
   const want = qs.get('delegate') || 'GPU';
+  const old = segmenter; segmenter = null;
+  if (old) old.close();
   try { segmenter = await make(want); state.segBackend = want; }
   catch (e) { console.warn('GPU delegate lỗi, chuyển CPU', e); segmenter = await make('CPU'); state.segBackend = 'CPU'; }
+}
+// Khoanh vùng quanh người. Model chỉ nhìn ảnh 256x256, nên nếu đưa cả khung hình thì người nhỏ sẽ bị thô.
+// Cắt sát quanh người rồi mới đưa vào model thì cùng 256x256 đó phủ lên người với mật độ cao hơn.
+const FULL = { x: 0, y: 0, w: 1, h: 1 };
+let maskRoi = FULL, roiNext = null, segCount = 0, roiCanvas = null;
+function planRoi(f, w, h, R) {            // từ mặt nạ vừa có, tính vùng khoanh cho khung sau
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for (let y = 0; y < h; y++) for (let x = 0, i = y * w; x < w; x++, i++) if (f[i] > 90) {
+    if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+  }
+  if (x1 < 0) return null;                // không thấy ai: khung sau nhìn lại toàn cảnh
+  const bx0 = R.x + x0 / w * R.w, bx1 = R.x + (x1 + 1) / w * R.w, by0 = R.y + y0 / h * R.h, by1 = R.y + (y1 + 1) / h * R.h;
+  const grow = (m) => {
+    const d = { x: Math.max(0, bx0 - m), y: Math.max(0, by0 - m) };
+    d.w = Math.min(1, bx1 + m) - d.x; d.h = Math.min(1, by1 + m) - d.y; return d;
+  };
+  const want = grow(0.10), need = grow(0.035);
+  const inside = R.x <= need.x + 1e-4 && R.y <= need.y + 1e-4 && R.x + R.w >= need.x + need.w - 1e-4 && R.y + R.h >= need.y + need.h - 1e-4;
+  // Giữ nguyên vùng cũ khi còn vừa, để lưới lấy mẫu không xê dịch từng khung (gây rung viền).
+  const next = inside && R.w * R.h <= 1.45 * want.w * want.h ? R : want;
+  return next.w * next.h > 0.85 ? null : next;
 }
 function segment(src, t) {
   let out = null;
   const t0 = performance.now();
-  segmenter.segmentForVideo(src, t, (res) => {
+  const sw = src.videoWidth || src.width, sh = src.videoHeight || src.height;
+  // Cứ 20 khung thì nhìn lại toàn cảnh một lần, phòng khi có người mới bước vào từ ngoài vùng khoanh.
+  const R = state.roi && roiNext && segCount % 20 !== 19 ? roiNext : FULL;
+  segCount++;
+  let input = src;
+  if (R !== FULL) {
+    if (!roiCanvas) { roiCanvas = document.createElement('canvas'); roiCanvas.width = roiCanvas.height = 256; }
+    roiCanvas.getContext('2d').drawImage(src, R.x * sw, R.y * sh, R.w * sw, R.h * sh, 0, 0, 256, 256);
+    input = roiCanvas;
+  }
+  segmenter.segmentForVideo(input, t, (res) => {
     const masks = res.confidenceMasks; if (!masks || !masks.length) return;
-    const m = masks[masks.length - 1];
+    // Model nhiều lớp: lớp 0 là nền, người = 1 - nền. Model một lớp: mặt nạ cuối là người.
+    const multi = masks.length >= 3, m = multi ? masks[0] : masks[masks.length - 1];
     const f = m.getAsFloat32Array(), n = m.width * m.height;
     if (!maskU8 || maskU8.length !== n) maskU8 = new Uint8Array(n);
-    for (let i = 0; i < n; i++) maskU8[i] = f[i] * 255;
+    if (multi) for (let i = 0; i < n; i++) maskU8[i] = (1 - f[i]) * 255;
+    else for (let i = 0; i < n; i++) maskU8[i] = f[i] * 255;
     out = { data: maskU8, w: m.width, h: m.height };
   });
+  if (out) { maskRoi = R; roiNext = state.roi ? planRoi(out.data, out.w, out.h, R) : null; }
   state.segMs = state.segMs * 0.9 + (performance.now() - t0) * 0.1;
   return out;
 }
@@ -359,6 +510,7 @@ async function shareLast() {
 let lastT = 0, frames = 0, fpsT = 0, newFrame = true, lastVideoTime = -1;
 function tick(now) {
   requestAnimationFrame(tick);
+  if (state.paused) return;               // bộ chấm điểm tự điều khiển từng khung hình
   const dt = Math.min(0.1, (now - lastT) / 1000 || 0); lastT = now;
   pollSnap(now);
   // Hiệu ứng chuyển cảnh kéo dài khoảng 0,6 giây.
@@ -366,10 +518,14 @@ function tick(now) {
   if (d) state.reveal += Math.sign(d) * Math.min(Math.abs(d), dt / 0.6);
 
   let mask = null;
-  if (demoCanvas) { mask = drawDemo(now); newFrame = true; }
+  if (demoCanvas) { mask = drawDemo(now); newFrame = true; maskRoi = FULL; }
+  else if (stillCanvas) newFrame = true;
   else { newFrame = video.currentTime !== lastVideoTime; lastVideoTime = video.currentTime; }
+  const aspect = canvas.width / canvas.height;
+  const av = (frameSrc.videoWidth || frameSrc.width) / (frameSrc.videoHeight || frameSrc.height) || aspect;
+  ensureRef(av);
   if (newFrame && (frameSrc.videoWidth || frameSrc.width)) {
-    if (segmenter && !demoCanvas) mask = segment(frameSrc, now);
+    if (segmenter && !demoCanvas) mask = segment(frameSrc, now) || null;
     else if (segmenter && qs.has('seg')) segment(frameSrc, now);      // chỉ để đo tốc độ khi giả lập
     gl.activeTexture(gl.TEXTURE0);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, frameSrc);
@@ -377,20 +533,25 @@ function tick(now) {
       gl.activeTexture(gl.TEXTURE1);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, mask.w, mask.h, 0, gl.RED, gl.UNSIGNED_BYTE, mask.data);
     }
+    refinePass();
     frames++;
   }
   const m = mul(rotZ(state.heading0), orientAt(now - state.delayMs));
   // Zoom vào thì góc nhìn hẹp lại, nên nền 360° cũng phải phóng to đúng tỉ lệ đó.
-  const aspect = canvas.width / canvas.height, tv = Math.tan(state.fovV * D2R / 2) / state.zoom;
+  const tv = Math.tan(state.fovV * D2R / 2) / state.zoom;
+  gl.useProgram(prog);
+  gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, ref.tex[ref.cur]);
+  gl.uniform2f(U.uRefTexel, 1 / ref.w, 1 / ref.h);
+  gl.uniform1f(U.uLo, state.lo); gl.uniform1f(U.uHi, state.hi);
+  gl.uniform1f(U.uDespill, state.refine ? state.despill : 0); gl.uniform1f(U.uDebug, state.debug ? 1 : 0);
   gl.uniform1f(U.uZoom, state.zoom);
-  const av = (frameSrc.videoWidth || frameSrc.width) / (frameSrc.videoHeight || frameSrc.height) || aspect;
   if (av > aspect) gl.uniform2f(U.uVidScale, aspect / av, 1); else gl.uniform2f(U.uVidScale, 1, av / aspect);
   gl.uniform1f(U.uSoft, state.zoom < 0.999 ? 0.03 : 0);
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.uniformMatrix3fv(U.uRot, true, m);
   gl.uniform2f(U.uTan, tv * aspect, tv);
   gl.uniform1f(U.uReveal, state.reveal); gl.uniform1f(U.uAspect, aspect);
-  gl.uniform1f(U.uTintAmt, state.tintAmt); gl.uniform1f(U.uInvert, state.invert ? 1 : 0);
+  gl.uniform1f(U.uTintAmt, state.tintAmt);
   gl.uniform3fv(U.uTint, panoTint);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
@@ -398,7 +559,7 @@ function tick(now) {
     state.fps = frames * 1000 / (now - fpsT); frames = 0; fpsT = now;
     $('hud').textContent =
       `${VERSION}  ${canvas.width}x${canvas.height}  ${state.fps.toFixed(0)} fps  cam ${frameSrc.videoWidth || frameSrc.width}x${frameSrc.videoHeight || frameSrc.height}\n` +
-      `tách người: ${state.segBackend} ${state.segMs.toFixed(1)} ms\n` +
+      `tách người: ${state.model === 'fine' ? 'kỹ' : 'nhanh'} ${state.segBackend} ${state.segMs.toFixed(1)} ms\n` +
       `xoay: ${state.orient}  zoom ${state.zoom.toFixed(1)}x${state.camInfo ? '\n' + state.camInfo : ''}${recorder ? '\n● đang quay' : ''}`;
   }
 }
@@ -442,6 +603,15 @@ function bindUI() {
   $('invert').onclick = (e) => { state.invert = !state.invert; e.target.textContent = 'Đảo mặt nạ: ' + (state.invert ? 'bật' : 'tắt'); };
   $('listen').onclick = (e) => { state.listen = !state.listen; e.target.textContent = 'Nghe búng tay: ' + (state.listen ? 'bật' : 'tắt'); };
   $('camMode').onclick = nextCamMode;
+  bind('erode', 'lo', (v) => v + '%', (v) => { state.lo = 0.2 + v / 100 * 0.5; state.hi = state.lo + 0.3; });
+  $('refine').onclick = (e) => { state.refine = !state.refine; e.target.textContent = 'Làm nét viền: ' + (state.refine ? 'bật' : 'tắt'); };
+  $('debug').onclick = (e) => { state.debug = !state.debug; e.target.textContent = 'Xem mặt nạ: ' + (state.debug ? 'bật' : 'tắt'); };
+  $('model').onclick = async (e) => {
+    state.model = state.model === 'fast' ? 'fine' : 'fast';
+    e.target.textContent = 'Model: đang tải…';
+    try { await initSegmenter(); } catch (err) { state.model = 'fast'; await initSegmenter(); }
+    e.target.textContent = 'Model: ' + (state.model === 'fine' ? 'kỹ' : 'nhanh');
+  };
   $('testPano').onclick = () => setPano(makeTestPano());
   $('pickPano').onclick = () => $('panoFile').click();
   $('panoFile').onchange = (e) => {
@@ -456,9 +626,11 @@ async function start() {
   try {
     msg.textContent = 'Đang xin quyền cảm biến…'; await startOrientation();   // phải gọi ngay trong lần chạm
     initGL(); setPano(makeTestPano());
-    if (DEMO) startDemoSource();
+    if (qs.get('src')) await startStillSource(qs.get('src'));
+    else if (DEMO) startDemoSource();
     else { msg.textContent = 'Đang mở camera…'; await startCamera(); initAudio(); }
-    if (!DEMO || qs.has('seg')) { msg.textContent = 'Đang tải model tách người…'; await initSegmenter(); }
+    if (qs.get('model')) state.model = qs.get('model');
+    if (!DEMO || qs.has('seg') || qs.get('src')) { msg.textContent = 'Đang tải model tách người…'; await initSegmenter(); }
     if (navigator.wakeLock) navigator.wakeLock.request('screen').catch(() => {});
     $('start').style.display = 'none';
     requestAnimationFrame(tick);
@@ -469,4 +641,19 @@ async function start() {
 
 bindUI();
 $('go').onclick = start;
-window.__tah = { state, onSnap, centerPano };   // để kiểm thử từ console
+// ---------- Móc nối cho bộ chấm điểm (tools/eval.js) ----------
+function evalFrame(src) {                 // chạy đúng chuỗi tách người + tinh chỉnh trên một khung hình cho trước
+  frameSrc = src; ensureRef(src.width / src.height);
+  const mask = segmenter ? segment(src, performance.now()) : null;
+  gl.activeTexture(gl.TEXTURE0);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
+  if (mask) {
+    gl.activeTexture(gl.TEXTURE1);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, mask.w, mask.h, 0, gl.RED, gl.UNSIGNED_BYTE, mask.data);
+  }
+  refinePass();
+  return readAlpha();
+}
+function resetRef() { ref.w = 0; roiNext = null; maskRoi = FULL; segCount = 0; }        // xoá trí nhớ khung trước giữa hai bài thử
+async function setModel(kind) { if (state.model !== kind || !segmenter) { state.model = kind; await initSegmenter(); } }
+window.__tah = { state, onSnap, centerPano, readAlpha, evalFrame, resetRef, setModel };   // để kiểm thử từ console
