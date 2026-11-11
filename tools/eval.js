@@ -146,7 +146,7 @@ function score(alpha, gt, w, h, lo, hi) {
 export async function run(cfg = {}) {
   const st = T().state; st.paused = true;
   await T().setModel(cfg.model || 'fast');
-  Object.assign(st, { refine: cfg.refine ?? true, sigmaC: cfg.sigmaC ?? 0.1, refStep: cfg.refStep ?? 1.6, temporal: cfg.temporal ?? 0.5, invert: false, roi: cfg.roi ?? true });
+  Object.assign(st, { refine: cfg.refine ?? true, sigmaC: cfg.sigmaC ?? 0.1, refStep: cfg.refStep ?? 1.6, temporal: cfg.temporal ?? 0.5, invert: false, roi: cfg.roi ?? false });
   const lo = cfg.lo ?? 0.41, hi = cfg.hi ?? 0.71, frames = cfg.frames ?? 6;
   const rows = [], agg = { tong: 0, vien: 0, lotNen: 0, matNguoi: 0, nhapNhay: 0, n: 0 };
   let seed = 1;
@@ -187,5 +187,67 @@ export function show(bg, lay, cfg = {}) {
     id.data[i * 4] = e > 0 ? 255 * e : 0; id.data[i * 4 + 2] = e < 0 ? -255 * e : 0; id.data[i * 4 + 1] = 160 * Math.min(v, g[i]); id.data[i * 4 + 3] = 255;
   }
   x.putImageData(id, a.w, 0);
+  return 'ok';
+}
+
+// ---------- Chấm trên ảnh người thật có mặt nạ chuẩn (ví dụ PPM-100, đã thu về 810x1080) ----------
+// dir chứa index.json, NNN.jpg và NNN_a.png. Mỗi ảnh được đưa qua nhiều khung với nhiễu khác nhau,
+// giống một đoạn video đứng yên, để đo cả độ chính xác lẫn nhấp nháy.
+async function loadImg(url) { const im = new Image(); im.src = url; await im.decode(); return im; }
+export async function runReal(dir, cfg = {}) {
+  const st = T().state; st.paused = true;
+  await T().setModel(cfg.model || 'fast');
+  Object.assign(st, { refine: cfg.refine ?? true, sigmaC: cfg.sigmaC ?? 0.1, refStep: cfg.refStep ?? 1.6, temporal: cfg.temporal ?? 0.5, invert: false, roi: cfg.roi ?? false });
+  const lo = cfg.lo ?? 0.41, hi = cfg.hi ?? 0.71, frames = cfg.frames ?? 4;
+  let index = await (await fetch(`${dir}/index.json`)).json();
+  if (cfg.ids) index = index.filter((e) => cfg.ids.includes(e.id));
+  if (cfg.limit) index = index.slice(0, cfg.limit);
+  const rows = [], agg = { tong: 0, vien: 0, lotNen: 0, matNguoi: 0, nhapNhay: 0 };
+  const c = mk(FW, FH), x = c.getContext('2d', { willReadFrequently: true });
+  let seed = 1;
+  for (const e of index) {
+    const [im, al] = await Promise.all([loadImg(`${dir}/${e.id}.jpg`), loadImg(`${dir}/${e.id}_a.png`)]);
+    T().resetRef();
+    let prev = null, flick = 0, a = null;
+    for (let f = 0; f < frames; f++) {
+      x.drawImage(im, 0, 0, FW, FH);
+      const id = x.getImageData(0, 0, FW, FH), d = id.data, r = rng(seed++);
+      for (let i = 0; i < d.length; i += 4) { const n = (r() - 0.5) * 10; d[i] += n; d[i + 1] += n; d[i + 2] += n; }
+      x.putImageData(id, 0, 0);
+      a = T().evalFrame(c);
+      if (prev) { let ds = 0; for (let i = 0; i < a.data.length; i++) ds += Math.abs(sstep(lo, hi, a.data[i] / 255) - sstep(lo, hi, prev[i] / 255)); flick += ds / a.data.length; }
+      prev = a.data;
+    }
+    const g = mk(a.w, a.h), gx = g.getContext('2d', { willReadFrequently: true });
+    gx.imageSmoothingQuality = 'high'; gx.drawImage(al, 0, 0, a.w, a.h);
+    const gd = gx.getImageData(0, 0, a.w, a.h).data, gt = new Float32Array(a.w * a.h);
+    for (let i = 0; i < gt.length; i++) gt[i] = gd[i * 4] / 255;
+    const s = score(a.data, gt, a.w, a.h, lo, hi);
+    s.nhapNhay = 1000 * flick / (frames - 1);
+    rows.push({ id: e.id, ...Object.fromEntries(Object.entries(s).map(([k, v]) => [k, +v.toFixed(2)])) });
+    for (const k in agg) agg[k] += s[k];
+  }
+  const mean = Object.fromEntries(Object.entries(agg).map(([k, v]) => [k, +(v / rows.length).toFixed(2)]));
+  const byVien = [...rows].sort((p, q) => p.vien - q.vien);
+  return { n: rows.length, mean, median_vien: byVien[Math.floor(rows.length / 2)].vien, worst: byVien.slice(0, 8), rows: cfg.rows ? rows : undefined };
+}
+// Xem bằng mắt một ảnh thật: trái là ảnh, phải là bản đồ sai số (xanh lá đúng, đỏ lọt nền, xanh dương mất người).
+export async function showReal(dir, id, cfg = {}) {
+  const st = T().state; st.paused = true; T().resetRef();
+  const [im, al] = await Promise.all([loadImg(`${dir}/${id}.jpg`), loadImg(`${dir}/${id}_a.png`)]);
+  const c = mk(FW, FH); c.getContext('2d').drawImage(im, 0, 0, FW, FH);
+  let a; for (let f = 0; f < 4; f++) a = T().evalFrame(c);
+  const lo = cfg.lo ?? 0.41, hi = cfg.hi ?? 0.71;
+  const g = mk(a.w, a.h), gx = g.getContext('2d', { willReadFrequently: true }); gx.drawImage(al, 0, 0, a.w, a.h);
+  const gd = gx.getImageData(0, 0, a.w, a.h).data;
+  let v = document.getElementById('evalView');
+  if (!v) { v = mk(a.w * 2, a.h); v.id = 'evalView'; v.style.cssText = 'position:fixed;inset:0;z-index:99;width:100%;height:100%;object-fit:contain;background:#222'; document.body.appendChild(v); }
+  const x = v.getContext('2d'); x.drawImage(c, 0, 0, a.w, a.h);
+  const id2 = x.createImageData(a.w, a.h);
+  for (let i = 0; i < a.data.length; i++) {
+    const p = sstep(lo, hi, a.data[i] / 255), t = gd[i * 4] / 255, e = p - t;
+    id2.data[i * 4] = e > 0 ? 255 * e : 0; id2.data[i * 4 + 2] = e < 0 ? -255 * e : 0; id2.data[i * 4 + 1] = 160 * Math.min(p, t); id2.data[i * 4 + 3] = 255;
+  }
+  x.putImageData(id2, a.w, 0);
   return 'ok';
 }

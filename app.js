@@ -8,7 +8,7 @@ const MODELS = {
   fine: `${MP_MODELS}/selfie_multiclass_256x256/float32/latest/selfie_multiclass_256x256.tflite`,  // 6 lớp, lớp 0 là nền
 };
 
-const VERSION = 'v7', ZOOM_MIN = 0.6, REF_W = 480;
+const VERSION = 'v8', ZOOM_MIN = 0.6, REF_W = 480;
 const qs = new URLSearchParams(location.search);
 const DEMO = qs.has('demo');          // không dùng camera: nguồn hình và mặt nạ giả lập
 const $ = (id) => document.getElementById(id);
@@ -19,7 +19,7 @@ const state = {
   // Tinh chỉnh mặt nạ: refStep = khoảng cách giữa các điểm lấy mẫu (tính theo điểm của mặt nạ tinh chỉnh),
   // sigmaC = mức khác màu được coi là "cùng một vật", temporal = phần tin vào khung mới ở chỗ đứng yên.
   refine: true, refStep: 1.6, sigmaC: 0.10, temporal: 0.5, lo: 0.41, hi: 0.71, despill: 2.5, debug: false,
-  model: 'fine', roi: true,
+  model: 'fine', roi: false,   // khoanh vùng: tắt, vì trên ảnh thật (PPM-100) nó làm mất người và tăng nhấp nháy
   reveal: 0, revealTarget: 0,          // 0 = ở nhà, 1 = ở điểm đến
   heading0: 0,                          // hướng la bàn được canh làm tâm ảnh 360°
   fps: 0, segMs: 0, segBackend: '-', orient: DEMO ? 'chuột' : 'chưa có',
